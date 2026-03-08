@@ -35,10 +35,10 @@ CONFIGURACIÓN DE PÁGINA
 
 body { 
     font-family: 'Inter', sans-serif; /* fuente base del documento */
-    font-size: 11px; 
+    font-size: 16px; 
     margin: 0; 
     padding: 0;
-    line-height: 1.3;
+    line-height: 1.15;
 }
 
 /* ======================================================
@@ -111,7 +111,7 @@ DATOS DEL PACIENTE
 .label { 
     font-weight: bold; 
     text-transform: uppercase; 
-    font-size: 10px; 
+    font-size: 12px; 
 }
 
 /* ======================================================
@@ -121,7 +121,7 @@ SECCIÓN
 .section-title { 
     text-align: center; 
     font-weight: bold; 
-    font-size: 13px; 
+    font-size: 18px; 
     margin: 20px 0; 
     text-decoration: underline; 
 }
@@ -264,7 +264,7 @@ SALTO DE PÁGINA
 
 <td style="border-bottom:0.5px solid #ccc;">
 
-<strong style="font-size:12px;">
+<strong style="font-size:16px;">
 {{ $r->medicamento }} ({{ $r->presentacion }})
 </strong>
 
@@ -272,7 +272,7 @@ SALTO DE PÁGINA
 
 @if($index === 1)
 
-<span style="color:#444;">
+<span style="color:#444; font-size:15px;">
 Tomar {{ $r->dosis }} cada {{ $r->frecuencia }} por {{ $r->duracion }} ({{ $r->via_administracion }})
 </span>
 
@@ -284,7 +284,7 @@ Tomar {{ $r->dosis }} cada {{ $r->frecuencia }} por {{ $r->duracion }} ({{ $r->v
 
 <td align="right" style="border-bottom:0.5px solid #ccc;">
 
-<strong style="font-size:12px;">
+<strong style="font-size:16px;">
 {{ $r->cantidad_total }} Unid.
 </strong>
 
