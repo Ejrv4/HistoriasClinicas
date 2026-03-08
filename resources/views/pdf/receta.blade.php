@@ -10,18 +10,28 @@ CARGA DE FUENTES LOCALES (PARA DOMPDF)
 ====================================================== */
 
 @font-face {
-    font-family: 'PlayfairSCBold';
+    font-family: 'Playfair Display SC';
     src: url("{{ public_path('fonts/PlayfairDisplaySC-Bold.ttf') }}") format('truetype');
+    font-weight: 700;
+    font-style: normal;
 }
 
 @font-face {
-    font-family: 'PlayfairSCRegular';
-    src: url("{{ public_path('fonts/PlayfairDisplaySC-Regular.ttf') }}") format('truetype');
+    font-family: 'Playfair Display';
+    src: url("{{ public_path('fonts/PlayfairDisplay-VariableFont_wght.ttf') }}") format('truetype');
+    font-weight: 400;
+    font-style: normal;
 }
 
 @font-face {
     font-family: 'Inter';
     src: url("{{ public_path('fonts/Inter-VariableFont_opsz,wght.ttf') }}") format('truetype');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url("{{ public_path('fonts/Montserrat-VariableFont_wght.ttf') }}") format('truetype');
+    font-weight: 900;
 }
 
 /* ======================================================
@@ -38,7 +48,7 @@ body {
     font-size: 16px; 
     margin: 0; 
     padding: 0;
-    line-height: 1.15;
+    line-height: 1.1;
 }
 
 /* ======================================================
@@ -60,39 +70,39 @@ ENCABEZADO
 
 .header { 
     text-align: center; 
-    margin-bottom: 25px; 
+    margin-bottom: 15px;
 }
-
 /* Nombre del doctor */
 
 .doc-name { 
-    font-family: 'PlayfairSCBold', serif;
-    font-size: 34px;
+    font-family: 'Playfair Display SC', serif;
+    font-weight: 700;
+    font-size: 28px;
     color: #1a237e; 
-    margin: 0;
-    letter-spacing: 1px;
+    margin: -8px 0;
 }
 
 /* Especialidad */
 
 .doc-specialty { 
-    font-family: 'PlayfairSCRegular', serif;
-    font-size: 16px; 
+    font-family: 'Playfair Display', serif;
+    font-weight: 400;
+    font-size: 18px; 
     color: #1a237e; 
-    margin: 6px 0; 
+    margin: -5px 0; 
 }
 
 /* CMP y RNE */
 
 .doc-codes { 
     font-family: 'Inter', sans-serif;
-    font-size: 12px; 
-    font-weight: bold; 
+    font-weight: normal;
+    font-size: 14px; 
     color: #1a237e;
     border-top: 1.5px solid #1a237e; 
     border-bottom: 1.5px solid #1a237e; 
     display: inline-block; 
-    padding: 4px 25px;
+    padding: 1px 15px;
     margin-top: 8px;
 }
 
@@ -104,14 +114,15 @@ DATOS DEL PACIENTE
     width: 100%; 
     border-top: 1px solid #444; 
     border-bottom: 1px solid #444; 
-    padding: 12px 0;
+    padding: 8px 0;
     margin-bottom: 20px;
 }
 
 .label { 
+    font-family: 'Inter', sans-serif;
     font-weight: bold; 
     text-transform: uppercase; 
-    font-size: 12px; 
+    font-size: 14px; 
 }
 
 /* ======================================================
@@ -119,11 +130,12 @@ SECCIÓN
 ====================================================== */
 
 .section-title { 
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 18px;
     text-align: center; 
     font-weight: bold; 
-    font-size: 18px; 
     margin: 20px 0; 
-    text-decoration: underline; 
 }
 
 /* Rp */
@@ -197,10 +209,24 @@ SALTO DE PÁGINA
     page-break-after: always; 
 }
 
+
+
+    .logo {
+        position: absolute;
+        top: -25px;
+        left: 0;
+        width: 142px;
+        height: auto;
+        z-index: -1;
+    }
+
 </style>
 </head>
 
 <body>
+
+<img src="{{ public_path('img/image3.png') }}" class="logo">
+
 
 @php $secciones = ['PRESCRIPCIÓN MÉDICA', 'INDICACIONES MÉDICAS']; @endphp
 
@@ -209,7 +235,7 @@ SALTO DE PÁGINA
 <img src="{{ public_path('img/image3.png') }}" class="watermark">
 
 <div class="header">
-<h1 class="doc-name">DR. HRISTO ROMÁN VARGAS</h1>
+<h1 class="doc-name">Dr. Hristo Román Vargas</h1>
 <p class="doc-specialty">Cirujano Abdominal & Laparoscópico</p>
 <div class="doc-codes">CMP: 84489 | RNE: 52457</div>
 </div>
@@ -239,7 +265,7 @@ SALTO DE PÁGINA
 </tr>
 
 <tr>
-<td colspan="2" style="padding-top:5px;">
+<td colspan="2">
 <span class="label">Diagnóstico:</span> {{ $diagnostico }}
 </td>
 </tr>

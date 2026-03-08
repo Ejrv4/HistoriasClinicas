@@ -7,5 +7,26 @@
     },
     "inter": {
         "normal": "inter_normal_94e1d1e4555e588439f44dcd96f2381a"
+    },
+    "playfair display sc": {
+        "bold": "C:\\xampp\\htdocs\\HistoriasClinicas\\storage\\fonts\/playfair_display_sc_bold_51920cf0657ebcd785a3e2360d5a07a6",
+        "normal": "playfair_display_sc_normal_93f31017586a718184404c9ee78b68c4"
+    },
+    "playfair display sc medium": {
+        "500": "playfair_display_sc_medium_500_93f31017586a718184404c9ee78b68c4"
+    },
+    "playfair display sc bold": {
+        "normal": "playfair_display_sc_bold_normal_51920cf0657ebcd785a3e2360d5a07a6"
+    },
+    "playfair display": {
+        "normal": "C:\\xampp\\htdocs\\HistoriasClinicas\\storage\\fonts\/playfair_display_normal_73f39ee4e4c6c580181cae654054121c",
+        "bold": "playfair_display_bold_73f39ee4e4c6c580181cae654054121c"
+    },
+    "playfair displa": {
+        "normal": "playfair_displa_normal_93f31017586a718184404c9ee78b68c4"
+    },
+    "montserrat": {
+        "normal": "C:\\xampp\\htdocs\\HistoriasClinicas\\storage\\fonts\/montserrat_normal_f467a563a1fcec6680c0fd3933b5b96f",
+        "900": "montserrat_900_f467a563a1fcec6680c0fd3933b5b96f"
     }
 }
