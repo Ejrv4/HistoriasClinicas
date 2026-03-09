@@ -113,11 +113,18 @@
                             <div class="row g-2 mb-3">
                                 <div class="col-md-8">
                                     <label class="fw-bold text-secondary small mb-2 text-uppercase">Diagnóstico</label>
-                                    <input type="text" name="diagnostico" class="form-control form-control-lg auto-save">
+                                    <input type="text" name="diagnostico" id="diagnostico_input" class="form-control form-control-lg auto-save">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="fw-bold text-secondary small mb-2 text-uppercase">CIE-10</label>
-                                    <input type="text" name="cie_10" class="form-control form-control-lg auto-save">
+                                    <input type="text" name="cie_10" id="cie_10_input" class="form-control form-control-lg auto-save" list="lista_cies" autocomplete="off">
+                                    
+                                    <datalist id="lista_cies">
+                                        @foreach($cie10Lista as $cie)
+                                            {{-- El 'value' es lo que se guarda, el texto interno es lo que ve el usuario --}}
+                                            <option value="{{ $cie->codigo }}">{{ $cie->descripcion }}</option>
+                                        @endforeach
+                                    </datalist>
                                 </div>
                             </div>
                             <label class="fw-bold text-secondary small mb-2 text-uppercase">Plan / Tratamiento</label>
@@ -464,6 +471,29 @@
                 } catch (e) {}
             }, 2000);
         });
+    });
+
+    // --- AUTOCOMPLETADO CIE-10 ---
+    const baseCie = @json($cie10Lista); // Pasamos la lista desde el controlador
+    const inputCie = document.getElementById('cie_10_input');
+    const inputDiag = document.getElementById('diagnostico_input');
+
+    inputCie.addEventListener('input', function(e) {
+        const val = e.target.value.trim().toUpperCase();
+        
+        // Buscamos si el código ingresado existe en nuestro catálogo
+        const coincidencia = baseCie.find(c => c.codigo.toUpperCase() === val);
+
+        if (coincidencia) {
+            // Si hay coincidencia, sugerimos la descripción en el campo Diagnóstico
+            inputDiag.value = coincidencia.descripcion;
+            
+            // Disparamos manualmente el efecto visual de guardado si lo deseas
+            document.getElementById('save-status').innerHTML = '<span class="text-success small"><i class="bi bi-magic"></i> Autocompletado</span>';
+            setTimeout(() => {
+                document.getElementById('save-status').innerHTML = '<span class="text-muted small"><i class="bi bi-cloud-check"></i> Listo</span>';
+            }, 1500);
+        }
     });
 </script>
 

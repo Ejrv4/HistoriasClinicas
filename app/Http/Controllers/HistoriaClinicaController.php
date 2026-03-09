@@ -16,6 +16,7 @@ class HistoriaClinicaController extends Controller
     {
         $cita = Cita::with('paciente')->findOrFail($request->cita_id);
         $antecedentes = Antecedente::where('paciente_id', $cita->paciente_id)->get();
+        $cie10Lista = \App\Models\Cie10::all();
         
         $historiasAnteriores = HistoriaClinica::where('paciente_id', $cita->paciente_id)
                     ->where('cita_id', '!=', $cita->id)
@@ -25,7 +26,7 @@ class HistoriaClinicaController extends Controller
 
         $medicamentosLista = Medicamento::all();
 
-        return view('historias.create', compact('cita', 'antecedentes', 'historiasAnteriores', 'medicamentosLista'));
+        return view('historias.create', compact('cita', 'antecedentes', 'historiasAnteriores', 'medicamentosLista','cie10Lista'));
     }
 
     public function store(Request $request)
@@ -74,6 +75,7 @@ class HistoriaClinicaController extends Controller
         $paciente = $cita->paciente;
 
         $medicamentosLista = Medicamento::all();
+        $cie10Lista = \App\Models\Cie10::all();
         $antecedentes = Antecedente::where('paciente_id', $paciente->id)->get();
 
         $historiasAnteriores = HistoriaClinica::where('paciente_id', $paciente->id)
@@ -86,7 +88,8 @@ class HistoriaClinicaController extends Controller
             'cita', 
             'paciente', 
             'medicamentosLista', 
-            'antecedentes', 
+            'antecedentes',
+            'cie10Lista', 
             'historiasAnteriores'
         ));
     }

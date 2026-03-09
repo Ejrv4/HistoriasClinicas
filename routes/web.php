@@ -6,6 +6,7 @@ use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\HistoriaClinicaController;
 use App\Http\Controllers\AntecedenteController;
 use App\Http\Controllers\RecetaController;
+use App\Http\Controllers\Cie10Controller;
 
 Route::get('/', function () {
     return view('welcome');
@@ -34,4 +35,9 @@ Route::put('/medicamentos/{id}', [App\Http\Controllers\MedicamentoController::cl
 Route::delete('/medicamentos/{id}', [App\Http\Controllers\MedicamentoController::class, 'destroy'])->name('medicamentos.destroy');
 
 Route::get('/receta/pdf/{cita_id}', [RecetaController::class, 'generarPDF'])->name('receta.pdf');
+
+Route::get('/cie10', [Cie10Controller::class, 'index'])->name('cie10.index');
+Route::post('/cie10', [Cie10Controller::class, 'store'])->name('cie10.store');
+Route::put('/cie10/{id}/inline', [Cie10Controller::class, 'updateInline'])->name('cie10.updateInline');
+Route::delete('/cie10/{id}', [Cie10Controller::class, 'destroy'])->name('cie10.destroy');
 
