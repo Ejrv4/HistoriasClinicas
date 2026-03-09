@@ -19,6 +19,8 @@ Route::post('/citas', [CitaController::class, 'store'])->name('citas.store');
 Route::get('/historias/create', [HistoriaClinicaController::class, 'create'])->name('historias.create');
 Route::post('/historias', [HistoriaClinicaController::class, 'store'])->name('historias.store');
 Route::post('/historias/autoguardar', [App\Http\Controllers\HistoriaClinicaController::class, 'autoguardar'])->name('historias.autoguardar');
+Route::get('historias/{id}/edit', [HistoriaClinicaController::class, 'edit'])->name('historias.edit');
+Route::put('historias/{id}', [HistoriaClinicaController::class, 'update'])->name('historias.update');
 
 Route::post('/antecedentes', [AntecedenteController::class, 'store'])->name('antecedentes.store');
 Route::post('/antecedentes/guardar-todo', [App\Http\Controllers\AntecedenteController::class, 'guardarTodo'])->name('antecedentes.guardar_todo');

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Receta;
-use App\Models\Cita; // IMPORTANTE
+use App\Models\Cita; 
 use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf; // IMPORTANTE para el PDF
+use Barryvdh\DomPDF\Facade\Pdf; 
 
 class RecetaController extends Controller
 {

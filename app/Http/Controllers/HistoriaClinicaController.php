@@ -66,6 +66,52 @@ class HistoriaClinicaController extends Controller
         ]);
     }
 
+    public function edit($id)
+    {
+        $historia = HistoriaClinica::with('cita.paciente')->findOrFail($id);
+        
+        $cita = $historia->cita;
+        $paciente = $cita->paciente;
+
+        $medicamentosLista = Medicamento::all();
+        $antecedentes = Antecedente::where('paciente_id', $paciente->id)->get();
+
+        $historiasAnteriores = HistoriaClinica::where('paciente_id', $paciente->id)
+                                ->where('id', '!=', $id)
+                                ->orderBy('created_at', 'desc')
+                                ->get();
+
+        return view('historias.edit', compact(
+            'historia', 
+            'cita', 
+            'paciente', 
+            'medicamentosLista', 
+            'antecedentes', 
+            'historiasAnteriores'
+        ));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'anamnesis' => 'required',
+            'diagnostico' => 'required',
+        ]);
+
+        $historia = HistoriaClinica::findOrFail($id);
+        $historia->update($request->only(['anamnesis', 'examen_fisico', 'diagnostico', 'cie_10', 'plan']));
+
+        // Ya no borramos aqui, porque guardarRecetas ya lo hace internamente
+        if ($request->has('recetas')) {
+            RecetaController::guardarRecetas($historia->cita_id, $request->recetas);
+        }
+
+        return redirect()->route('dashboard')->with([
+            'success' => 'Cambios guardados.',
+            'imprimir_receta' => route('receta.pdf', $historia->cita_id)
+        ]);
+    }
+
     public function autoguardar(Request $request)
     {
         HistoriaClinica::updateOrCreate(

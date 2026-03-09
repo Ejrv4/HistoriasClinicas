@@ -22,9 +22,11 @@ class MedicamentoController extends Controller
         ]);
 
         Medicamento::create($request->all());
-        $medicamentosLista = \App\Models\Medicamento::all();
-        return view('historias.create', compact('cita', 'antecedentes', 'historiasAnteriores', 'medicamentosLista'));
+
+        // Redirigir atras para que el doctor no pierda lo que estaba escribiendo
+        return redirect()->back()->with('success', 'Medicamento agregado al catálogo.');
     }
+
     public function updateInline(Request $request, $id)
     {
         try {
