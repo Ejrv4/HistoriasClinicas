@@ -287,10 +287,38 @@
 <script>
     // --- AUTOCOMPLETADO INTELIGENTE ---
     const baseMedicamentos = @json($medicamentosLista);
-    document.getElementById('rec_med').addEventListener('input', function(e) {
+    const inputMed = document.getElementById('rec_med');
+    const inputPres = document.getElementById('rec_pres');
+    const datalistPres = document.getElementById('lista_pres_med');
+
+    inputMed.addEventListener('input', function(e) {
         const val = e.target.value.trim().toLowerCase();
-        const encontrado = baseMedicamentos.find(m => m.nombre.toLowerCase() === val);
-        if (encontrado) { document.getElementById('rec_pres').value = encontrado.presentacion; }
+        
+        // 1. Filtrar medicamentos que coincidan exactamente con el nombre escrito
+        const presentacionesFiltradas = baseMedicamentos.filter(m => 
+            m.nombre.toLowerCase() === val
+        );
+
+        // 2. Limpiar el datalist de presentaciones
+        datalistPres.innerHTML = '';
+
+        if (val === '' || presentacionesFiltradas.length === 0) {
+            // Si está en blanco o no hay coincidencias, mostrar TODAS las presentaciones únicas
+            const todasLasPres = [...new Set(baseMedicamentos.map(m => m.presentacion))];
+            todasLasPres.forEach(p => {
+                datalistPres.innerHTML += `<option value="${p}">`;
+            });
+        } else {
+            // Si hay coincidencia de nombre, mostrar SOLO las presentaciones de ese medicamento
+            presentacionesFiltradas.forEach(m => {
+                datalistPres.innerHTML += `<option value="${m.presentacion}">`;
+            });
+
+            // Autoseleccionar si solo hay una opción para ahorrar tiempo al Dr. Román
+            if (presentacionesFiltradas.length === 1) {
+                inputPres.value = presentacionesFiltradas[0].presentacion;
+            }
+        }
     });
 
     // --- CÁLCULO DE DOSIS REACTIVO ---

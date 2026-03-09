@@ -17,7 +17,7 @@ class MedicamentoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|unique:medicamentos,nombre',
+            'nombre' => 'required',
             'presentacion' => 'required'
         ]);
 
