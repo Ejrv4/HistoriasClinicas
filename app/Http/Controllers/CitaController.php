@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Paciente;
 use App\Models\Cita;
+use App\Models\HistoriaClinica;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -14,8 +15,9 @@ class CitaController extends Controller
         $busqueda = $request->input('buscar');
         $fechaSeleccionada = $request->input('fecha', date('Y-m-d'));
 
-        // Consulta con filtros
-        $query = Cita::with('paciente')->whereDate('fecha', $fechaSeleccionada);
+        // CORRECCIÓN: Agregamos 'historiaClinica' al método with
+        $query = Cita::with(['paciente', 'historiaClinica']) 
+                    ->whereDate('fecha', $fechaSeleccionada);
 
         if ($busqueda) {
             $query->whereHas('paciente', function($q) use ($busqueda) {
@@ -26,8 +28,6 @@ class CitaController extends Controller
         }
 
         $citas = $query->orderBy('hora', 'asc')->get();
-
-        // Obtener todos los días que tienen citas para el calendario
         $diasConCitas = Cita::select('fecha')->distinct()->pluck('fecha')->toArray();
 
         return view('dashboard', compact('citas', 'diasConCitas', 'fechaSeleccionada'));

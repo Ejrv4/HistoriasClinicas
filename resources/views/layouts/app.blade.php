@@ -35,7 +35,6 @@
         }
         
         .nav-link i { font-size: 1.2rem; margin-right: 12px; }
-        
         .nav-link:hover { background-color: #f8f9fc; color: #224abe; }
         
         .nav-link.active { 
@@ -77,12 +76,19 @@
             <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
                 <i class="bi bi-speedometer2"></i> Gestion de Citas
             </a>
+
             <div class="section-title">Gestión</div>
+
             <a class="nav-link {{ request()->routeIs('pacientes.*') ? 'active' : '' }}" href="{{ route('pacientes.index') }}">
                 <i class="bi bi-people"></i> Historias Clinicas
             </a>
-            <a class="nav-link {{ request()->is('medicamentos*') ? 'active' : '' }}" href="{{ route('medicamentos.index') }}">
-                <i class="bi bi-capsule-pill me-2"></i> Gestionar Medicamentos
+
+            <a class="nav-link {{ request()->routeIs('medicamentos.*') ? 'active' : '' }}" href="{{ route('medicamentos.index') }}">
+                <i class="bi bi-capsule-pill"></i> Gestionar Medicamentos
+            </a>
+
+            <a class="nav-link {{ request()->routeIs('cie10.*') ? 'active' : '' }}" href="{{ route('cie10.index') }}">
+                <i class="bi bi-clipboard2-pulse"></i> Gestión de CIE-10
             </a>
         </div>
     </div>
@@ -91,7 +97,7 @@
         <nav class="topbar">
             <span class="text-gray-600">Sistema de Gestión Médica v1.0</span>
             <div class="ms-auto d-flex align-items-center">
-                <span class="me-3 small fw-medium text-muted">{{ now()->format('l, d F Y') }}</span>
+                <span class="me-3 small fw-medium text-muted">{{ now()->translatedFormat('l, d F Y') }}</span>
                 <div class="vr me-3"></div>
                 <i class="bi bi-person-circle fs-4 text-primary"></i>
             </div>
