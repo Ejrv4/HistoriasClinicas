@@ -68,18 +68,29 @@
                             @endif
                         </td>
                         <td class="text-end">
-                            <div class="d-flex justify-content-end gap-2">
-                                @if($cita->estado == 'Atendido')
-                                    <a href="{{ route('receta.pdf', $cita->id) }}" target="_blank" class="btn btn-sm btn-outline-danger" title="Imprimir Receta">
-                                        <i class="bi bi-printer"></i>
-                                    </a>
-                                @endif
+    <div class="d-flex justify-content-end gap-2">
+        @if($cita->estado == 'Atendido')
+            <a href="{{ route('receta.pdf', $cita->id) }}" target="_blank" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-printer"></i>
+            </a>
 
-                                <a href="{{ route('historias.create', ['cita_id' => $cita->id]) }}" class="btn btn-sm btn-dark">
-                                    <i class="bi bi-file-earmark-medical me-1"></i> Abrir ficha
-                                </a>
-                            </div>
-                        </td>
+            {{-- CORRECCIÓN: Usar el nombre completo definido en el modelo --}}
+            @if($cita->historiaClinica)
+                <a href="{{ route('historias.edit', $cita->historiaClinica->id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil-square me-1"></i> Editar ficha
+                </a>
+            @else
+                <a href="{{ route('historias.create', ['cita_id' => $cita->id]) }}" class="btn btn-sm btn-warning">
+                    <i class="bi bi-plus-circle me-1"></i> Completar ficha
+                </a>
+            @endif
+        @else
+            <a href="{{ route('historias.create', ['cita_id' => $cita->id]) }}" class="btn btn-sm btn-dark">
+                <i class="bi bi-file-earmark-medical me-1"></i> Abrir ficha
+            </a>
+        @endif
+    </div>
+</td>
                     </tr>
                 @endforeach
             </tbody>

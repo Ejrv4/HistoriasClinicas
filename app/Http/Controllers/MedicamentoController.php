@@ -17,14 +17,16 @@ class MedicamentoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|unique:medicamentos,nombre',
+            'nombre' => 'required',
             'presentacion' => 'required'
         ]);
 
         Medicamento::create($request->all());
-        $medicamentosLista = \App\Models\Medicamento::all();
-        return view('historias.create', compact('cita', 'antecedentes', 'historiasAnteriores', 'medicamentosLista'));
+
+        // Redirigir atras para que el doctor no pierda lo que estaba escribiendo
+        return redirect()->back()->with('success', 'Medicamento agregado al catálogo.');
     }
+
     public function updateInline(Request $request, $id)
     {
         try {
