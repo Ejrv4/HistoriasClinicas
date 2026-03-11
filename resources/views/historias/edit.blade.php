@@ -134,7 +134,8 @@
             <div class="tab-pane fade" id="pestana-receta" role="tabpanel">
                 <div class="card border-0 shadow-sm p-4">
                     <div class="bg-light p-3 rounded border mb-4">
-                        <div class="row g-3">
+                        {{-- FILA 1: IDENTIFICACIÓN (Solo estos 3 arriba) --}}
+                        <div class="row g-3 mb-3">
                             <div class="col-md-4">
                                 <label class="small fw-bold text-muted">MEDICAMENTO</label>
                                 <input type="text" id="rec_med" class="form-control" list="lista_nombres_med" autocomplete="off">
@@ -145,14 +146,19 @@
                                 </datalist>
                             </div>
                             <div class="col-md-4">
+                                <label class="small fw-bold text-muted">CONCENTRACIÓN</label>
+                                <input type="text" id="rec_conc" class="form-control" list="lista_conc_med" autocomplete="off">
+                                <datalist id="lista_conc_med"></datalist>
+                            </div>
+                            <div class="col-md-4">
                                 <label class="small fw-bold text-muted">PRESENTACIÓN</label>
                                 <input type="text" id="rec_pres" class="form-control" list="lista_pres_med" autocomplete="off">
-                                <datalist id="lista_pres_med">
-                                    @foreach($medicamentosLista->unique('presentacion') as $m)
-                                        <option value="{{ $m->presentacion }}">
-                                    @endforeach
-                                </datalist>
+                                <datalist id="lista_pres_med"></datalist>
                             </div>
+                        </div>
+
+                        {{-- FILA 2: ADMINISTRACIÓN Y POSOLOGÍA --}}
+                        <div class="row g-3 align-items-end">
                             <div class="col-md-2">
                                 <label class="small fw-bold text-muted">DOSIS (Cant.)</label>
                                 <input type="number" id="rec_dos" class="form-control calc-trigger" step="0.1">
@@ -160,10 +166,10 @@
                             <div class="col-md-2">
                                 <label class="small fw-bold text-muted">VÍA</label>
                                 <select id="rec_via" class="form-select">
-                                    <option>Via Oral</option><option>Intramuscular</option><option>Sublingual</option><option>Tópico</option>
+                                    <option>Via Oral</option><option>Intramuscular</option><option>Sublingual</option><option>Tópico</option><option>Oftálmica</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="small fw-bold text-muted">FRECUENCIA</label>
                                 <div class="input-group">
                                     <input type="number" id="f_n" class="form-control calc-trigger" placeholder="Cada...">
@@ -173,7 +179,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="small fw-bold text-muted">DURACIÓN</label>
                                 <div class="input-group">
                                     <input type="number" id="d_n" class="form-control calc-trigger" placeholder="Por...">
@@ -186,18 +192,23 @@
                             </div>
                             <div class="col-md-2">
                                 <label class="small fw-bold text-primary">CANT. TOTAL</label>
-                                <input type="text" id="rec_total" class="form-control fw-bold border-primary text-center" readonly value="0">
+                                <input type="number" id="rec_total" class="form-control fw-bold border-primary text-center" value="0">
                             </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="button" onclick="addMedicamento()" class="btn btn-danger w-100 fw-bold shadow-sm">AÑADIR</button>
+                            
+                            <div class="col-12 text-end mt-3">
+                                <button type="button" onclick="addMedicamento()" class="btn btn-danger px-5 fw-bold shadow-sm">
+                                    <i class="bi bi-plus-lg me-2"></i>AÑADIR A LA RECETA
+                                </button>
                             </div>
                         </div>
                     </div>
 
+                    {{-- Tabla de Visualización --}}
                     <table class="table border align-middle mb-4 shadow-sm">
                         <thead class="table-dark small text-center">
                             <tr>
-                                <th class="text-start">Medicamento</th>
+                                <th class="text-start">Medicamento / Concentración</th>
+                                <th>Presentación</th>
                                 <th>Dosis/Vía</th>
                                 <th>Frecuencia</th>
                                 <th>Duración</th>
@@ -205,12 +216,10 @@
                                 <th width="5%">X</th>
                             </tr>
                         </thead>
-                        <tbody id="listaRecetaVisual">
-                            </tbody>
+                        <tbody id="listaRecetaVisual"></tbody>
                     </table>
 
-                    <div id="inputs-receta-ocultos">
-                         </div>
+                    <div id="inputs-receta-ocultos"></div>
 
                     <div class="text-end border-top pt-4">
                         <button type="submit" class="btn btn-success btn-lg px-5 shadow-lg fw-bold">
@@ -263,21 +272,81 @@
     const baseMedicamentos = @json($medicamentosLista);
     let recIdx = 0;
 
-    // --- CARGAR RECETAS EXISTENTES AL INICIAR ---
+    // --- 1. CARGAR RECETAS EXISTENTES AL INICIAR ---
     document.addEventListener('DOMContentLoaded', function() {
         const recetasExistentes = @json($cita->recetas);
         
         recetasExistentes.forEach(r => {
-            // Dividir frecuencia y duración para rellenar los campos ocultos correctamente
-            // Asumiendo que guardas "8 Horas" o "7 Días" en la BD
-            injectReceta(r.medicamento, r.presentacion, r.dosis, r.via_administracion, r.frecuencia, r.duracion, r.cantidad_total);
+            injectReceta(
+                r.medicamento, 
+                r.concentracion,
+                r.presentacion, 
+                r.dosis, 
+                r.via_administracion, 
+                r.frecuencia, 
+                r.duracion, 
+                r.cantidad_total
+            );
         });
     });
 
-    function injectReceta(med, pres, dos, via, freq, dur, total) {
+    // --- 2. LÓGICA DE FILTRADO EN CASCADA (REACTIVO) ---
+    const inputMed = document.getElementById('rec_med');
+    const inputConc = document.getElementById('rec_conc');
+    const inputPres = document.getElementById('rec_pres');
+    const datalistConc = document.getElementById('lista_conc_med');
+    const datalistPres = document.getElementById('lista_pres_med');
+
+    // Filtrar Concentraciones al escribir el nombre
+    inputMed.addEventListener('input', function() {
+        const val = this.value.trim().toLowerCase();
+        const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase() === val);
+        
+        datalistConc.innerHTML = '';
+        inputConc.value = ''; 
+        inputPres.value = '';
+
+        if (filtrados.length > 0) {
+            const concentracionesUnicas = [...new Set(filtrados.map(m => m.concentracion))];
+            concentracionesUnicas.forEach(c => datalistConc.innerHTML += `<option value="${c}">`);
+            
+            if(concentracionesUnicas.length === 1) {
+                inputConc.value = concentracionesUnicas[0];
+                inputConc.dispatchEvent(new Event('input'));
+            }
+        }
+    });
+
+    // Filtrar Presentaciones al escribir la concentración
+    inputConc.addEventListener('input', function() {
+        const medVal = inputMed.value.trim().toLowerCase();
+        const concVal = this.value.trim().toLowerCase();
+        
+        const filtrados = baseMedicamentos.filter(m => 
+            m.nombre.toLowerCase() === medVal && 
+            m.concentracion.toLowerCase() === concVal
+        );
+        
+        datalistPres.innerHTML = '';
+        if (filtrados.length > 0) {
+            const presentacionesUnicas = [...new Set(filtrados.map(m => m.presentacion))];
+            presentacionesUnicas.forEach(p => datalistPres.innerHTML += `<option value="${p}">`);
+            
+            if(presentacionesUnicas.length === 1) {
+                inputPres.value = presentacionesUnicas[0];
+            }
+        }
+    });
+
+    // --- 3. INYECCIÓN DE FILAS EN LA TABLA ---
+    function injectReceta(med, conc, pres, dos, via, freq, dur, total) {
         const fila = `
             <tr id="fila_${recIdx}" class="align-middle text-center">
-                <td class="text-start"><strong>${med}</strong><br><small class="text-muted">${pres}</small></td>
+                <td class="text-start">
+                    <strong>${med}</strong><br>
+                    <span class="badge bg-secondary-subtle text-secondary border">${conc}</span>
+                </td>
+                <td><small>${pres}</small></td>
                 <td>${dos} - ${via}</td>
                 <td>${freq}</td>
                 <td>${dur}</td>
@@ -294,6 +363,7 @@
         const hiddens = `
             <div id="hidden_${recIdx}">
                 <input type="hidden" name="recetas[${recIdx}][medicamento]" value="${med}">
+                <input type="hidden" name="recetas[${recIdx}][concentracion]" value="${conc}">
                 <input type="hidden" name="recetas[${recIdx}][presentacion]" value="${pres}">
                 <input type="hidden" name="recetas[${recIdx}][dosis]" value="${dos}">
                 <input type="hidden" name="recetas[${recIdx}][via_administracion]" value="${via}">
@@ -306,9 +376,10 @@
         recIdx++;
     }
 
-    // --- FUNCIONES DE MANEJO DE FORMULARIO (Mismas de Create) ---
+    // --- 4. FUNCIONES AUXILIARES ---
     function addMedicamento() {
         const med = document.getElementById('rec_med').value;
+        const conc = document.getElementById('rec_conc').value;
         const pres = document.getElementById('rec_pres').value;
         const dos = document.getElementById('rec_dos').value;
         const via = document.getElementById('rec_via').value;
@@ -316,14 +387,14 @@
         const dur = document.getElementById('d_n').value + ' ' + document.getElementById('d_t').value;
         const total = document.getElementById('rec_total').value;
 
-        if(!med || !dos || total <= 0) return alert("Complete los datos.");
+        if(!med || !dos || total <= 0) return alert("Complete los datos requeridos.");
 
-        injectReceta(med, pres, dos, via, freq, dur, total);
+        injectReceta(med, conc, pres, dos, via, freq, dur, total);
         
-        // Limpiar
-        document.getElementById('rec_med').value = ''; 
-        document.getElementById('rec_dos').value = '';
+        // Limpiar campos para el siguiente registro
+        ['rec_med', 'rec_conc', 'rec_pres', 'rec_dos', 'f_n', 'd_n'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('rec_total').value = '0';
+        document.getElementById('rec_med').focus();
     }
 
     function removeMed(id) {
@@ -349,20 +420,13 @@
         }
     }
 
-    // Eventos
+    // Eventos de cálculo
     document.querySelectorAll('.calc-trigger').forEach(el => {
         el.addEventListener('input', calcularCantidadTotal);
         el.addEventListener('change', calcularCantidadTotal);
     });
 
-    // Autocompletado
-    document.getElementById('rec_med').addEventListener('input', function(e) {
-        const val = e.target.value.trim().toLowerCase();
-        const encontrado = baseMedicamentos.find(m => m.nombre.toLowerCase() === val);
-        if (encontrado) { document.getElementById('rec_pres').value = encontrado.presentacion; }
-    });
-
-    // --- AUTOGUARDADO (Mantenido) ---
+    // --- 5. AUTOGUARDADO Y ANTECEDENTES ---
     let debounceTimer;
     document.querySelectorAll('.auto-save').forEach(campo => {
         campo.addEventListener('input', () => {
@@ -374,7 +438,7 @@
                     await fetch("{{ route('historias.autoguardar') }}", {
                         method: 'POST',
                         body: new FormData(form),
-                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value }
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
                     });
                     document.getElementById('save-status').innerHTML = '<span class="text-success">Cambios guardados</span>';
                 } catch (e) {}
@@ -382,7 +446,6 @@
         });
     });
 
-    // --- ANTECEDENTES ---
     async function guardarAntecedentesManual(event) {
         const statusLabel = document.getElementById('save-status');
         const btn = event.currentTarget;
@@ -398,11 +461,11 @@
         try {
             const response = await fetch("{{ route('antecedentes.guardar_todo') }}", {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value },
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify(payload)
             });
             if (response.ok) {
-                statusLabel.innerHTML = '<span class="text-success fw-bold">Antecedentes Actualizados</span>';
+                statusLabel.innerHTML = '<span class="text-success fw-bold">Historial Médico Actualizado</span>';
                 setTimeout(() => { btn.disabled = false; }, 1000);
             }
         } catch (error) { btn.disabled = false; }

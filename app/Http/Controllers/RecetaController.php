@@ -13,13 +13,13 @@ class RecetaController extends Controller
     {
         if (!$recetasArray || !is_array($recetasArray)) return;
 
-        // Limpiamos recetas previas para evitar duplicados si se re-edita
         Receta::where('cita_id', $cita_id)->delete();
 
         foreach ($recetasArray as $datos) {
             Receta::create([
                 'cita_id'            => $cita_id,
                 'medicamento'        => $datos['medicamento'],
+                'concentracion'      => $datos['concentracion'] ?? 'N/A',
                 'presentacion'       => $datos['presentacion'] ?? 'N/A',
                 'dosis'              => $datos['dosis'],
                 'via_administracion' => $datos['via_administracion'],
@@ -37,15 +37,14 @@ class RecetaController extends Controller
         $data = [
             'paciente'    => $cita->paciente->apellido . ', ' . $cita->paciente->nombre,
             'dni'         => $cita->paciente->dni,
-            'diagnostico' => $cita->historiaClinica->diagnostico ?? 'Ver historia',
+            'diagnostico' => $cita->historiaClinica->diagnostico ?? 'Pendiente de registro',
             'edad'        => \Carbon\Carbon::parse($cita->paciente->fecha_nacimiento)->age,
             'fecha'       => date('d/m/Y'),
             'recetas'     => $cita->recetas
         ];
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.receta', $data);
+        $pdf = Pdf::loadView('pdf.receta', $data);
         
-        // Configuramos el papel A4
-        return $pdf->setPaper('a4', 'portrait')->stream('receta_medica.pdf');
+        return $pdf->setPaper('a4', 'portrait')->stream('receta_medica_'. $cita->paciente->dni .'.pdf');
     }
 }

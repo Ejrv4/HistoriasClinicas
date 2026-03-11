@@ -17,8 +17,9 @@ class MedicamentoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => 'required',
-            'presentacion' => 'required'
+        'nombre' => 'required',
+        'concentracion' => 'required',
+        'presentacion' => 'required'
         ]);
 
         Medicamento::create($request->all());
@@ -31,7 +32,7 @@ class MedicamentoController extends Controller
     {
         try {
             $medicamento = Medicamento::findOrFail($id);
-            $medicamento->update($request->only(['nombre', 'presentacion']));
+            $medicamento->update($request->only(['nombre','concentracion', 'presentacion']));
             return response()->json(['status' => 'success']);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
