@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="container-fluid">
+    {{-- Encabezado del Paciente (Sin cambios) --}}
     <div class="card shadow-sm border-0 mb-4 bg-light">
         <div class="card-body py-3">
             <div class="row align-items-center">
@@ -20,7 +21,7 @@
                 </div>
                 <div class="col-md-4 text-md-end">
                     <div id="save-status" class="me-4 d-inline-block">
-                        <span class="text-muted small"><i class="bi bi-cloud-check"></i> Listo</span>
+                        <span class="text-muted small"><i class="bi bi-check2-circle"></i> Modo Manual</span>
                     </div>
                     <div class="d-inline-block text-start">
                         <small class="text-muted d-block small-caps">País</small>
@@ -52,6 +53,7 @@
 
         <div class="tab-content" id="hcTabsContent">
             
+            {{-- PESTAÑA ANTECEDENTES --}}
             <div class="tab-pane fade show active" id="pestana-antecedentes" role="tabpanel">
                 <div class="card border-0 shadow-sm p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
@@ -84,6 +86,7 @@
                 </div>
             </div>
 
+            {{-- PESTAÑA HISTORIA CLÍNICA (MODIFICADA) --}}
             <div class="tab-pane fade" id="consulta" role="tabpanel">
                 <div class="row">
                     <div class="col-md-3">
@@ -107,37 +110,45 @@
                     <div class="col-md-9">
                         <div class="card border-0 shadow-sm p-4">
                             <label class="fw-bold text-secondary small mb-2 text-uppercase">Anamnesis</label>
-                            <textarea name="anamnesis" class="form-control mb-3 auto-save" rows="4"></textarea>
+                            <textarea name="anamnesis" class="form-control mb-3" rows="4"></textarea>
+                            
                             <label class="fw-bold text-secondary small mb-2 text-uppercase">Examen Físico</label>
-                            <textarea name="examen_fisico" class="form-control mb-3 auto-save" rows="4"></textarea>
-                            <div class="row g-2 mb-3">
-                                <div class="col-md-8">
-                                    <label class="fw-bold text-secondary small mb-2 text-uppercase">Diagnóstico</label>
-                                    <input type="text" name="diagnostico" id="diagnostico_input" class="form-control form-control-lg auto-save">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="fw-bold text-secondary small mb-2 text-uppercase">CIE-10</label>
-                                    <input type="text" name="cie_10" id="cie_10_input" class="form-control form-control-lg auto-save" list="lista_cies" autocomplete="off">
-                                    
-                                    <datalist id="lista_cies">
-                                        @foreach($cie10Lista as $cie)
-                                            {{-- El 'value' es lo que se guarda, el texto interno es lo que ve el usuario --}}
-                                            <option value="{{ $cie->codigo }}">{{ $cie->descripcion }}</option>
-                                        @endforeach
-                                    </datalist>
+                            <textarea name="examen_fisico" class="form-control mb-3" rows="4"></textarea>
+                            
+                            {{-- SECCIÓN DE DIAGNÓSTICOS MÚLTIPLES --}}
+                            <div id="diagnosticos-container">
+                                <div class="row g-2 mb-2 diagnostico-row">
+                                    <div class="col-md-8">
+                                        <label class="fw-bold text-secondary small mb-2 text-uppercase">Diagnóstico</label>
+                                        <input type="text" name="diagnosticos[0][diagnostico]" class="form-control diag-input">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="fw-bold text-secondary small mb-2 text-uppercase">CIE-10</label>
+                                        <input type="text" name="diagnosticos[0][cie_10]" class="form-control cie-input" list="lista_cies" autocomplete="off">
+                                    </div>
+                                    <div class="col-md-1 d-flex align-items-end pb-1">
+                                        {{-- El primer diagnóstico no tiene botón X para obligar a tener al menos uno --}}
+                                    </div>
                                 </div>
                             </div>
+                            
+                            <div class="mb-3">
+                                <button type="button" onclick="agregarFilaDiagnostico()" class="btn btn-sm btn-outline-primary fw-bold">
+                                    <i class="bi bi-plus-circle me-1"></i> AÑADIR OTRO DIAGNÓSTICO
+                                </button>
+                            </div>
+
                             <label class="fw-bold text-secondary small mb-2 text-uppercase">Plan / Tratamiento</label>
-                            <textarea name="plan" class="form-control mb-4 auto-save" rows="4"></textarea>
+                            <textarea name="plan" class="form-control mb-4" rows="4"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
 
+            {{-- PESTAÑA RECETA MÉDICA (IDENTIFICACIÓN ARRIBA) --}}
             <div class="tab-pane fade" id="pestana-receta" role="tabpanel">
                 <div class="card border-0 shadow-sm p-4">
                     <div class="bg-light p-3 rounded border mb-4">
-                        {{-- FILA 1: IDENTIFICACIÓN (Solo estos 3 arriba) --}}
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
                                 <label class="small fw-bold text-muted">MEDICAMENTO</label>
@@ -160,7 +171,6 @@
                             </div>
                         </div>
 
-                        {{-- FILA 2: ADMINISTRACIÓN Y POSOLOGÍA --}}
                         <div class="row g-3 align-items-end">
                             <div class="col-md-2">
                                 <label class="small fw-bold text-muted">DOSIS (Cant.)</label>
@@ -206,7 +216,6 @@
                         </div>
                     </div>
 
-                    {{-- Tabla de Visualización --}}
                     <table class="table border align-middle mb-4 shadow-sm">
                         <thead class="table-dark small text-center">
                             <tr>
@@ -225,8 +234,8 @@
                     <div id="inputs-receta-ocultos"></div>
 
                     <div class="text-end border-top pt-4">
-                        <button type="submit" class="btn btn-success btn-lg px-5 shadow-lg fw-bold">
-                            <i class="bi bi-save me-2"></i> GUARDAR CAMBIOS
+                        <button type="submit" class="btn btn-primary btn-lg px-5 shadow-lg fw-bold">
+                            <i class="bi bi-check-all me-2"></i> FINALIZAR ATENCIÓN MÉDICA
                         </button>
                     </div>
                 </div>
@@ -302,8 +311,56 @@
     </div>
 </div>
 
+<datalist id="lista_cies">
+    @foreach($cie10Lista as $cie)
+        <option value="{{ $cie->codigo }}">{{ $cie->descripcion }}</option>
+    @endforeach
+</datalist>
+
 <script>
-    // --- LÓGICA DE MEDICAMENTOS
+    // --- 1. GESTIÓN DE DIAGNÓSTICOS MÚLTIPLES ---
+    let diagCounter = 1;
+    const baseCie = @json($cie10Lista);
+
+    function agregarFilaDiagnostico() {
+        const container = document.getElementById('diagnosticos-container');
+        const html = `
+            <div class="row g-2 mb-2 diagnostico-row" id="diag-row-${diagCounter}">
+                <div class="col-md-8">
+                    <input type="text" name="diagnosticos[${diagCounter}][diagnostico]" class="form-control diag-input">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="diagnosticos[${diagCounter}][cie_10]" class="form-control cie-input" list="lista_cies" autocomplete="off">
+                </div>
+                <div class="col-md-1 d-flex align-items-end pb-1">
+                    <button type="button" onclick="eliminarFilaDiagnostico(${diagCounter})" class="btn btn-outline-danger border-0">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+        diagCounter++;
+    }
+
+    function eliminarFilaDiagnostico(id) {
+        document.getElementById(`diag-row-${id}`).remove();
+    }
+
+    // Autocompletado delegando eventos al contenedor de diagnósticos
+    document.getElementById('diagnosticos-container').addEventListener('input', function(e) {
+        if (e.target.classList.contains('cie-input')) {
+            const val = e.target.value.trim().toUpperCase();
+            const row = e.target.closest('.diagnostico-row');
+            const inputDiag = row.querySelector('.diag-input');
+            
+            const coincidencia = baseCie.find(c => c.codigo.toUpperCase() === val);
+            if (coincidencia) {
+                inputDiag.value = coincidencia.descripcion;
+            }
+        }
+    });
+
+    // --- 2. LÓGICA DE MEDICAMENTOS (FILTRADO CASCADA) ---
     const baseMedicamentos = @json($medicamentosLista);
     const inputMed = document.getElementById('rec_med');
     const inputConc = document.getElementById('rec_conc');
@@ -314,15 +371,11 @@
     inputMed.addEventListener('input', function() {
         const val = this.value.trim().toLowerCase();
         const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase() === val);
-        
         datalistConc.innerHTML = '';
-        inputConc.value = ''; 
-        inputPres.value = '';
-
+        inputConc.value = ''; inputPres.value = '';
         if (filtrados.length > 0) {
             const concentracionesUnicas = [...new Set(filtrados.map(m => m.concentracion))];
             concentracionesUnicas.forEach(c => datalistConc.innerHTML += `<option value="${c}">`);
-            
             if(concentracionesUnicas.length === 1) {
                 inputConc.value = concentracionesUnicas[0];
                 inputConc.dispatchEvent(new Event('input')); 
@@ -333,53 +386,38 @@
     inputConc.addEventListener('input', function() {
         const medVal = inputMed.value.trim().toLowerCase();
         const concVal = this.value.trim().toLowerCase();
-        
         const filtrados = baseMedicamentos.filter(m => 
-            m.nombre.toLowerCase() === medVal && 
-            m.concentracion.toLowerCase() === concVal
+            m.nombre.toLowerCase() === medVal && m.concentracion.toLowerCase() === concVal
         );
-        
         datalistPres.innerHTML = '';
         if (filtrados.length > 0) {
             const presentacionesUnicas = [...new Set(filtrados.map(m => m.presentacion))];
             presentacionesUnicas.forEach(p => datalistPres.innerHTML += `<option value="${p}">`);
-            
-            if(presentacionesUnicas.length === 1) {
-                inputPres.value = presentacionesUnicas[0];
-            }
+            if(presentacionesUnicas.length === 1) inputPres.value = presentacionesUnicas[0];
         }
     });
 
-    // --- CÁLCULO DE DOSIS REACTIVO ---
-    const camposCalculo = document.querySelectorAll('.calc-trigger');
-    camposCalculo.forEach(el => {
-        el.addEventListener('input', calcularCantidadTotal);
-        el.addEventListener('change', calcularCantidadTotal); 
-    });
-
+    // --- 3. CÁLCULO DE DOSIS ---
     function calcularCantidadTotal() {
         const dosis = parseFloat(document.getElementById('rec_dos').value) || 0;
         const f_num = parseFloat(document.getElementById('f_n').value) || 0;
         const f_tipo = document.getElementById('f_t').value;
         const d_num = parseFloat(document.getElementById('d_n').value) || 0;
         const d_tipo = document.getElementById('d_t').value;
-
         if (dosis > 0 && f_num > 0 && d_num > 0) {
             let tomasAlDia = (f_tipo === 'Horas') ? (24 / f_num) : (1 / f_num);
             let diasTotales = d_num;
             if (d_tipo === 'Semanas') diasTotales = d_num * 7;
             if (d_tipo === 'Meses') diasTotales = d_num * 30;
-
-            const resultado = dosis * tomasAlDia * diasTotales;
-            
-            document.getElementById('rec_total').value = Math.ceil(resultado);
-            
-            document.getElementById('rec_total').classList.add('bg-primary-subtle');
-            setTimeout(() => document.getElementById('rec_total').classList.remove('bg-primary-subtle'), 400);
+            document.getElementById('rec_total').value = Math.ceil(dosis * tomasAlDia * diasTotales);
         }
     }
+    document.querySelectorAll('.calc-trigger').forEach(el => {
+        el.addEventListener('input', calcularCantidadTotal);
+        el.addEventListener('change', calcularCantidadTotal); 
+    });
 
-    // --- MANEJO DE RECETAS ---
+    // --- 4. MANEJO DE RECETAS ---
     let recIdx = 0;
     function addMedicamento() {
         const med = document.getElementById('rec_med').value;
@@ -391,47 +429,30 @@
         const dur = document.getElementById('d_n').value + ' ' + document.getElementById('d_t').value;
         const total = document.getElementById('rec_total').value;
 
-        if(!med || !dos || total <= 0) return alert("Complete los datos y verifique el cálculo.");
+        if(!med || !dos || total <= 0) return alert("Datos incompletos.");
 
-        const fila = `
-        <tr id="fila_${recIdx}" class="align-middle text-center">
-                        <td class="text-start"><strong>${med}</strong><br><span class="badge bg-secondary">${conc}</span></td>
-                        <td><small>${pres}</small></td>
-                        <td>${dos} - ${via}</td>
-                        <td>Cada ${freq}</td>
-                        <td>Por ${dur}</td>
-                        <td class="fw-bold text-primary">${total} <small>unid.</small></td>
-                        <td>
-                            <button type="button" onclick="removeMed(${recIdx})" class="btn btn-outline-danger btn-sm rounded-circle">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                        </td>
-                    </tr>`;
+        const fila = `<tr id="fila_${recIdx}" class="align-middle text-center">
+            <td class="text-start"><strong>${med}</strong><br><span class="badge bg-secondary">${conc}</span></td>
+            <td><small>${pres}</small></td>
+            <td>${dos} - ${via}</td>
+            <td>${freq}</td><td>${dur}</td>
+            <td class="fw-bold text-primary">${total}</td>
+            <td><button type="button" onclick="removeMed(${recIdx})" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-x-lg"></i></button></td></tr>`;
         
         document.getElementById('listaRecetaVisual').insertAdjacentHTML('beforeend', fila);
-
-        const hiddens = `
-            <div id="hidden_${recIdx}">
-                <input type="hidden" name="recetas[${recIdx}][medicamento]" value="${med}">
-                <input type="hidden" name="recetas[${recIdx}][concentracion]" value="${conc}">
-                <input type="hidden" name="recetas[${recIdx}][presentacion]" value="${pres}">
-                <input type="hidden" name="recetas[${recIdx}][dosis]" value="${dos}">
-                <input type="hidden" name="recetas[${recIdx}][via_administracion]" value="${via}">
-                <input type="hidden" name="recetas[${recIdx}][frecuencia]" value="${freq}">
-                <input type="hidden" name="recetas[${recIdx}][duracion]" value="${dur}">
-                <input type="hidden" name="recetas[${recIdx}][cantidad_total]" value="${total}">
-            </div>`;
-        
+        const hiddens = `<div id="hidden_${recIdx}">
+            <input type="hidden" name="recetas[${recIdx}][medicamento]" value="${med}">
+            <input type="hidden" name="recetas[${recIdx}][concentracion]" value="${conc}">
+            <input type="hidden" name="recetas[${recIdx}][presentacion]" value="${pres}">
+            <input type="hidden" name="recetas[${recIdx}][dosis]" value="${dos}">
+            <input type="hidden" name="recetas[${recIdx}][via_administracion]" value="${via}">
+            <input type="hidden" name="recetas[${recIdx}][frecuencia]" value="${freq}">
+            <input type="hidden" name="recetas[${recIdx}][duracion]" value="${dur}">
+            <input type="hidden" name="recetas[${recIdx}][cantidad_total]" value="${total}"></div>`;
         document.getElementById('inputs-receta-ocultos').insertAdjacentHTML('beforeend', hiddens);
         recIdx++;
-        
-        // Limpiar campos
-        document.getElementById('rec_med').value = ''; 
-        document.getElementById('rec_conc').value = '';
-        document.getElementById('rec_pres').value = '';
-        document.getElementById('rec_dos').value = '';
+        ['rec_med','rec_conc','rec_pres','rec_dos','f_n','d_n'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('rec_total').value = '0';
-        document.getElementById('rec_med').focus();
     }
 
     function removeMed(id) {
@@ -439,95 +460,36 @@
         document.getElementById(`hidden_${id}`).remove();
     }
 
-    // --- ANTECEDENTES Y AUTOGUARDADO ---
+    // --- 5. ANTECEDENTES ---
     async function guardarAntecedentesManual(event) {
         const statusLabel = document.getElementById('save-status');
-        const btn = event.currentTarget;
         const formDiv = document.getElementById('formAntecedentesContenedor');
         const inputs = formDiv.querySelectorAll('textarea');
         const pacienteId = document.querySelector('input[name="paciente_id"]').value;
-
+        const btn = event.currentTarget;
         btn.disabled = true;
         statusLabel.innerHTML = 'Guardando...';
-
         const payload = { paciente_id: pacienteId };
         inputs.forEach(i => payload[i.name] = i.value);
-
         try {
             const response = await fetch("{{ route('antecedentes.guardar_todo') }}", {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify(payload)
             });
             if (response.ok) {
                 statusLabel.innerHTML = '<span class="text-success fw-bold">Guardado</span>';
-                actualizarReferenciaLateral();
                 setTimeout(() => { btn.disabled = false; }, 1000);
             }
         } catch (error) { btn.disabled = false; }
     }
-
-    function actualizarReferenciaLateral() {
-        const lista = document.getElementById('lista-referencia');
-        const textAreas = document.querySelectorAll('#formAntecedentesContenedor textarea');
-        lista.innerHTML = '';
-        textAreas.forEach(ta => {
-            if(ta.value.trim() !== '') {
-                lista.innerHTML += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
-                    <strong class="text-primary d-block small">${ta.name.toUpperCase()}</strong><span>${ta.value}</span></li>`;
-            }
-        });
-    }
-
-    let debounceTimer;
-    document.querySelectorAll('.auto-save').forEach(campo => {
-        campo.addEventListener('input', () => {
-            document.getElementById('save-status').innerHTML = 'Escribiendo...';
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(async () => {
-                const form = document.getElementById('formAtencionMedica');
-                try {
-                    await fetch("{{ route('historias.autoguardar') }}", {
-                        method: 'POST',
-                        body: new FormData(form),
-                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value }
-                    });
-                    document.getElementById('save-status').innerHTML = '<span class="text-success">Guardado</span>';
-                } catch (e) {}
-            }, 2000);
-        });
-    });
-
-    // --- AUTOCOMPLETADO CIE-10 ---
-    const baseCie = @json($cie10Lista); // Pasamos la lista desde el controlador
-    const inputCie = document.getElementById('cie_10_input');
-    const inputDiag = document.getElementById('diagnostico_input');
-
-    inputCie.addEventListener('input', function(e) {
-        const val = e.target.value.trim().toUpperCase();
-        
-        // Buscamos si el código ingresado existe en nuestro catálogo
-        const coincidencia = baseCie.find(c => c.codigo.toUpperCase() === val);
-
-        if (coincidencia) {
-            // Si hay coincidencia, sugerimos la descripción en el campo Diagnóstico
-            inputDiag.value = coincidencia.descripcion;
-            
-            // Disparamos manualmente el efecto visual de guardado si lo deseas
-            document.getElementById('save-status').innerHTML = '<span class="text-success small"><i class="bi bi-magic"></i> Autocompletado</span>';
-            setTimeout(() => {
-                document.getElementById('save-status').innerHTML = '<span class="text-muted small"><i class="bi bi-cloud-check"></i> Listo</span>';
-            }, 1500);
-        }
-    });
 </script>
 
 <style>
     .nav-tabs .nav-link { color: #6c757d; border: none; border-bottom: 3px solid transparent; transition: all 0.3s ease; padding: 12px 25px; border-radius: 8px 8px 0 0; }
-    .nav-tabs .nav-link.active { color: #ffffff !important; background-color: #2c3e50 !important; border-bottom: 3px solid #1a252f; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .nav-tabs .nav-link#receta-tab.active { background-color: #c0392b !important; border-bottom: 3px solid #962d22; }
-    textarea.form-control { resize: none; border-radius: 8px; border: 1px solid #dee2e6; }
-    .accordion-button:not(.collapsed) { background-color: #f8f9fc; color: #4e73df; }
+    .nav-tabs .nav-link.active { color: #ffffff !important; background-color: #2c3e50 !important; border-bottom: 3px solid #1a252f; }
+    .nav-tabs .nav-link#receta-tab.active { background-color: #c0392b !important; }
+    textarea.form-control { resize: none; border-radius: 8px; }
     .btn-outline-danger.rounded-circle { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; padding: 0; }
 </style>
 @endsection

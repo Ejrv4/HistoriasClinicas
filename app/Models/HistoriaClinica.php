@@ -23,4 +23,7 @@ class HistoriaClinica extends Model
     public function cita() {
         return $this->belongsTo(Cita::class, 'cita_id');
     }
+    public function diagnosticos() {
+    return $this->hasMany(DiagnosticoAtencion::class, 'historia_clinica_id');
+    }
 }
