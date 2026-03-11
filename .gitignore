@@ -37,4 +37,8 @@ npm-debug.log
 yarn-error.log
 .DS_Store
 Thumbs.db
+# Ignorar todas las imágenes en la carpeta img
 public/img/*
+
+# Pero NO ignorar el archivo .gitkeep
+!public/img/.gitkeep
