@@ -212,7 +212,7 @@ SALTO DE PÁGINA
 
 
     .logo {
-        position: absolute;
+        position: fixed;
         top: -25px;
         left: 0;
         width: 142px;
