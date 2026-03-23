@@ -10,6 +10,7 @@ class Paciente extends Model
     
     protected $fillable = [
         'dni',
+        'trabajo',
         'nombre',
         'apellido',
         'fecha_nacimiento',
@@ -24,8 +25,8 @@ class Paciente extends Model
     public function store(Request $request)
     {
         $request->validate([
-            // 'unique:tabla,columna'
-            'dni' => 'required|unique:pacientes,dni', 
+            'dni' => 'required|unique:pacientes,dni',
+            'trabajo' => 'required', 
             'nombre' => 'required',
             'apellido' => 'required',
             'fecha_nacimiento' => 'required|date',

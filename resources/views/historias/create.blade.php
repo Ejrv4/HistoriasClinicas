@@ -10,7 +10,9 @@
                     <h4 class="fw-bold text-primary mb-1">
                         <i class="bi bi-person-vcard me-2"></i>
                         {{ $cita->paciente->apellido }}, {{ $cita->paciente->nombre }} 
-                        <span class="text-dark">({{ \Carbon\Carbon::parse($cita->paciente->fecha_nacimiento)->age }} años)</span> 
+                        <span class="text-dark">
+                            ({{ \Carbon\Carbon::parse($cita->paciente->fecha_nacimiento)->age }} años{{ $cita->paciente->trabajo ? ', ' . $cita->paciente->trabajo : '' }})
+                        </span> 
                         <span class="badge bg-info-subtle text-info border border-info-subtle ms-2" style="font-size: 0.8rem;">
                             {{ $cita->paciente->genero }}
                         </span>
@@ -20,9 +22,6 @@
                     <span class="text-muted ms-3 small">DNI: {{ $cita->paciente->dni }}</span>
                 </div>
                 <div class="col-md-4 text-md-end">
-                    <div id="save-status" class="me-4 d-inline-block">
-                        <span class="text-muted small"><i class="bi bi-check2-circle"></i> Modo Manual</span>
-                    </div>
                     <div class="d-inline-block text-start">
                         <small class="text-muted d-block small-caps">País</small>
                         <span class="fw-bold">{{ $cita->paciente->pais_nacimiento }}</span>

@@ -28,8 +28,9 @@ class PacienteController extends Controller
     {
         $validated = $request->validate([
             'dni' => 'required|unique:pacientes,dni',
-            'nombre' => 'required',
-            'apellido' => 'required',
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'trabajo' => 'nullable|string|max:255',
             'fecha_nacimiento' => 'required|date',
             'genero' => 'required',
             'celular_personal' => 'required',
@@ -44,7 +45,6 @@ class PacienteController extends Controller
             'correo.email' => 'Debes ingresar un formato de correo válido.',
         ]);
 
-        // CAMBIO CLAVE: Usamos $validated en lugar de $request->all()
         $paciente = Paciente::create($validated);
 
         // LÓGICA DEL BOTÓN CREAR CITA AHORA
@@ -52,7 +52,6 @@ class PacienteController extends Controller
             $ahora = Carbon::now('America/Lima');
             $minutos = $ahora->minute;
 
-            // 2. Lógica de redondeo a bloques de 30 min
             if ($minutos > 0 && $minutos <= 30) {
                 $ahora->minute(30)->second(0);
             } elseif ($minutos > 30) {
@@ -94,14 +93,17 @@ class PacienteController extends Controller
 
         $validated = $request->validate([
             'dni' => 'required|unique:pacientes,dni,' . $id,
-            'nombre' => 'required',
-            'apellido' => 'required',
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'trabajo' => 'nullable|string|max:255',
             'celular_personal' => 'required',
             'distrito' => 'required',
             'direccion' => 'required',
+            'correo' => 'nullable|email',
+            'genero' => 'nullable',
+            'fecha_nacimiento' => 'nullable|date',
         ]);
 
-        // Aquí también es mejor usar $validated por seguridad
         $paciente->update($validated);
 
         return redirect()->route('pacientes.index')->with('success', 'Datos del paciente actualizados.');
@@ -112,9 +114,8 @@ class PacienteController extends Controller
         $paciente = Paciente::findOrFail($id);
         $antecedentes = \App\Models\Antecedente::where('paciente_id', $id)->get();
         
-        // Traemos las historias incluyendo su cita y las recetas de esa cita
         $historial = \App\Models\HistoriaClinica::where('paciente_id', $id)
-                        ->with(['cita.recetas'])
+                        ->with(['cita.recetas', 'diagnosticos']) // Incluimos diagnósticos múltiples
                         ->orderBy('created_at', 'desc')
                         ->get();
 

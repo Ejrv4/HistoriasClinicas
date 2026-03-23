@@ -29,6 +29,7 @@
                     <th>Nombres</th>
                     <th class="text-center">Género</th>
                     <th class="text-center">Edad</th>
+                    <th>Ocupación</th>
                     <th>Celular Personal</th>
                     <th>Distrito</th>
                     <th class="text-end no-sort">Acciones</th>
@@ -51,6 +52,10 @@
                     </td>
                     <td class="text-center">
                         {{ \Carbon\Carbon::parse($paciente->fecha_nacimiento)->age }} años
+                    </td>
+                    {{-- DATO DE OCUPACIÓN --}}
+                    <td>
+                        <span class="text-dark small fw-medium">{{ $paciente->trabajo ?? 'N/A' }}</span>
                     </td>
                     <td>
                         <i class="bi bi-phone text-muted me-1"></i> {{ $paciente->celular_personal }}

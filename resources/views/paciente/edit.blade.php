@@ -4,7 +4,9 @@
 <div class="container-fluid">
     <div class="card shadow-sm border-0">
         <div class="card-header bg-white py-3">
-            <h5 class="mb-0 text-primary fw-bold"><i class="bi bi-pencil-square me-2"></i>Editar Paciente: {{ $paciente->nombre }} {{ $paciente->apellido }}</h5>
+            <h5 class="mb-0 text-primary fw-bold">
+                <i class="bi bi-pencil-square me-2"></i>Editar Paciente: {{ $paciente->nombre }} {{ $paciente->apellido }}
+            </h5>
         </div>
         <div class="card-body p-4">
             <form action="{{ route('pacientes.update', $paciente->id) }}" method="POST">
@@ -15,34 +17,42 @@
                 <div class="row mb-4">
                     <div class="col-md-3">
                         <label class="form-label fw-bold">DNI</label>
-                        <input type="text" name="dni" class="form-control" value="{{ $paciente->dni }}" required>
+                        <input type="text" name="dni" class="form-control @error('dni') is-invalid @enderror" value="{{ old('dni', $paciente->dni) }}" required>
+                        @error('dni')
+                            <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                        @enderror
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Género</label>
                         <select name="genero" class="form-select" required>
-                            <option value="Masculino" {{ $paciente->genero == 'Masculino' ? 'selected' : '' }}>Masculino</option>
-                            <option value="Femenino" {{ $paciente->genero == 'Femenino' ? 'selected' : '' }}>Femenino</option>
-                            <option value="Otros" {{ $paciente->genero == 'Otros' ? 'selected' : '' }}>Otros</option>
+                            <option value="Masculino" {{ old('genero', $paciente->genero) == 'Masculino' ? 'selected' : '' }}>Masculino</option>
+                            <option value="Femenino" {{ old('genero', $paciente->genero) == 'Femenino' ? 'selected' : '' }}>Femenino</option>
+                            <option value="Otros" {{ old('genero', $paciente->genero) == 'Otros' ? 'selected' : '' }}>Otros</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Fecha de Nacimiento</label>
-                        <input type="date" name="fecha_nacimiento" class="form-control" value="{{ $paciente->fecha_nacimiento }}" required>
+                        <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento', $paciente->fecha_nacimiento) }}" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold">País de Nacimiento</label>
-                        <input type="text" name="pais_nacimiento" class="form-control" value="{{ $paciente->pais_nacimiento }}" required>
+                        <input type="text" name="pais_nacimiento" class="form-control" value="{{ old('pais_nacimiento', $paciente->pais_nacimiento) }}" required>
                     </div>
                 </div>
 
                 <div class="row mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label fw-bold">Nombres</label>
-                        <input type="text" name="nombre" class="form-control" value="{{ $paciente->nombre }}" required>
+                        <input type="text" name="nombre" class="form-control" value="{{ old('nombre', $paciente->nombre) }}" required>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label fw-bold">Apellidos</label>
-                        <input type="text" name="apellido" class="form-control" value="{{ $paciente->apellido }}" required>
+                        <input type="text" name="apellido" class="form-control" value="{{ old('apellido', $paciente->apellido) }}" required>
+                    </div>
+                    {{-- CAMPO ACTUALIZADO: TRABAJO --}}
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-primary">Ocupación / Trabajo</label>
+                        <input type="text" name="trabajo" class="form-control" value="{{ old('trabajo', $paciente->trabajo) }}" placeholder="Ej: Ingeniero, Docente, etc.">
                     </div>
                 </div>
 
@@ -50,27 +60,29 @@
                 <div class="row mb-4">
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Celular Personal</label>
-                        <input type="text" name="celular_personal" class="form-control" value="{{ $paciente->celular_personal }}" required>
+                        <input type="text" name="celular_personal" class="form-control" value="{{ old('celular_personal', $paciente->celular_personal) }}" required>
                     </div>
                     <div class="col-md-8">
                         <label class="form-label fw-bold">Correo Electrónico</label>
-                        <input type="email" name="correo" class="form-control" value="{{ $paciente->correo }}">
+                        <input type="email" name="correo" class="form-control" value="{{ old('correo', $paciente->correo) }}">
                     </div>
                 </div>
 
                 <div class="row mb-4">
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Distrito</label>
-                        <input type="text" name="distrito" class="form-control" value="{{ $paciente->distrito }}" required>
+                        <input type="text" name="distrito" class="form-control" value="{{ old('distrito', $paciente->distrito) }}" required>
                     </div>
                     <div class="col-md-8">
                         <label class="form-label fw-bold">Dirección</label>
-                        <input type="text" name="direccion" class="form-control" value="{{ $paciente->direccion }}" required>
+                        <input type="text" name="direccion" class="form-control" value="{{ old('direccion', $paciente->direccion) }}" required>
                     </div>
                 </div>
 
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary px-5 shadow-sm">Actualizar Datos</button>
+                <div class="mt-4 border-top pt-3">
+                    <button type="submit" class="btn btn-primary px-5 shadow-sm fw-bold">
+                        <i class="bi bi-save me-2"></i>Actualizar Datos
+                    </button>
                     <a href="{{ route('pacientes.index') }}" class="btn btn-light border px-4">Cancelar</a>
                 </div>
             </form>

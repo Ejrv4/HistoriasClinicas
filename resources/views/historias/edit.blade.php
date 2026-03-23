@@ -9,8 +9,13 @@
                 <div class="col-md-8">
                     <h4 class="fw-bold text-primary mb-1">
                         <i class="bi bi-person-vcard me-2"></i>
-                        {{ $paciente->apellido }}, {{ $paciente->nombre }} 
-                        <span class="text-dark">({{ \Carbon\Carbon::parse($paciente->fecha_nacimiento)->age }} años)</span> 
+                        {{ $cita->paciente->apellido }}, {{ $cita->paciente->nombre }} 
+                        <span class="text-dark">
+                            ({{ \Carbon\Carbon::parse($cita->paciente->fecha_nacimiento)->age }} años{{ $cita->paciente->trabajo ? ', ' . $cita->paciente->trabajo : '' }})
+                        </span> 
+                        <span class="badge bg-info-subtle text-info border border-info-subtle ms-2" style="font-size: 0.8rem;">
+                            {{ $cita->paciente->genero }}
+                        </span>
                     </h4>
                     <span class="badge bg-dark">HC N° {{ str_pad($paciente->id, 6, '0', STR_PAD_LEFT) }}</span>
                     <span class="badge bg-primary ms-1">CITA N° {{ str_pad($cita->id, 6, '0', STR_PAD_LEFT) }}</span>
