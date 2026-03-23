@@ -39,6 +39,10 @@ yarn-error.log
 Thumbs.db
 # Ignorar todas las imágenes en la carpeta img
 public/img/*
+<<<<<<< HEAD
 
 # Pero NO ignorar el archivo .gitkeep
 !public/img/.gitkeep
+=======
+!public/img/.gitkeep
+>>>>>>> 10f3626d7b612fba78d54ed8298c93c4f5fa6f60
