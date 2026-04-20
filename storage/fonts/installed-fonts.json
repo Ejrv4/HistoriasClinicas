@@ -6,7 +6,7 @@
         "normal": "playfairscregular_normal_93f31017586a718184404c9ee78b68c4"
     },
     "inter": {
-        "normal": "inter_normal_94e1d1e4555e588439f44dcd96f2381a"
+        "normal": "inter_normal_2f103a9328589c5a8a6971426bf74284"
     },
     "playfair display sc": {
         "bold": "C:\\xampp\\htdocs\\HistoriasClinicas\\storage\\fonts\/playfair_display_sc_bold_51920cf0657ebcd785a3e2360d5a07a6",
@@ -27,6 +27,9 @@
     },
     "montserrat": {
         "normal": "C:\\xampp\\htdocs\\HistoriasClinicas\\storage\\fonts\/montserrat_normal_f467a563a1fcec6680c0fd3933b5b96f",
-        "900": "montserrat_900_f467a563a1fcec6680c0fd3933b5b96f"
+        "900": "montserrat_900_65013317862d65efbd3015706826888e"
+    },
+    "imperial script": {
+        "normal": "imperial_script_normal_661cb691bc01ae884cce20eb51a07332"
     }
 }
