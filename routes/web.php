@@ -16,6 +16,7 @@ Route::get('/dashboard', [CitaController::class, 'index'])->name('dashboard');
 
 Route::get('/citas/crear', [CitaController::class, 'create'])->name('citas.create');
 Route::post('/citas', [CitaController::class, 'store'])->name('citas.store');
+Route::post('/citas/{id}/cancelar', [App\Http\Controllers\CitaController::class, 'cancelar'])->name('citas.cancelar');
 
 Route::get('/historias/create', [HistoriaClinicaController::class, 'create'])->name('historias.create');
 Route::post('/historias', [HistoriaClinicaController::class, 'store'])->name('historias.store');

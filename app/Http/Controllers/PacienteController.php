@@ -28,13 +28,8 @@ class PacienteController extends Controller
     {
         $validated = $request->validate([
             'dni' => 'required|unique:pacientes,dni',
-<<<<<<< HEAD
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
-=======
-            'nombre' => 'required',
-            'apellido' => 'required',
->>>>>>> Front
             'trabajo' => 'nullable|string|max:255',
             'fecha_nacimiento' => 'required|date',
             'genero' => 'required',

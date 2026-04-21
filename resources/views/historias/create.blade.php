@@ -2,6 +2,12 @@
 
 @section('content')
 <div class="container-fluid">
+    {{-- Botón Regresar Alineado --}}
+    <div class="mb-3">
+        <a href="{{ route('dashboard') }}" class="btn btn-link text-decoration-none text-secondary fw-bold ps-0">
+            <i class="bi bi-arrow-left me-2"></i>REGRESAR
+        </a>
+    </div>
     {{-- Encabezado del Paciente (Sin cambios) --}}
     <div class="card shadow-sm border-0 mb-4 bg-light">
         <div class="card-body py-3">
@@ -482,6 +488,41 @@
             }
         } catch (error) { btn.disabled = false; }
     }
+    // --- 6. PROTECCIÓN DE CAMBIOS NO GUARDADOS ---
+    let formChanged = false;
+
+    // Detectar cualquier cambio en los campos del formulario
+    const atencionForm = document.getElementById('formAtencionMedica');
+    atencionForm.addEventListener('input', () => {
+        formChanged = true;
+    });
+
+    // Detectar salida mediante enlaces internos (Botón Regresar, Menú, etc.)
+    document.addEventListener('click', function (e) {
+        const target = e.target.closest('a'); // Buscar si se hizo clic en un enlace
+        
+        // Si hay cambios, es un enlace real (tiene href) y no es una pestaña (tab)
+        if (formChanged && target && target.href && !target.hasAttribute('data-bs-toggle')) {
+            const confirmacion = confirm("⚠️ No se han guardado los cambios de la atención actual. ¿Está seguro de que desea salir sin guardar?");
+            if (!confirmacion) {
+                e.preventDefault(); // Detener la navegación
+            }
+        }
+    });
+
+    // Detectar cierre de pestaña o recarga del navegador (F5)
+    window.addEventListener('beforeunload', function (e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = ''; // Requerido por navegadores modernos para mostrar el aviso nativo
+        }
+    });
+
+    // Desactivar la advertencia cuando se envíe el formulario correctamente
+    atencionForm.addEventListener('submit', () => {
+        formChanged = false; // Permitir la salida porque ya se está guardando
+    });
+
 </script>
 
 <style>
