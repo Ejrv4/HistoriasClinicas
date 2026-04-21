@@ -30,6 +30,7 @@ class PacienteController extends Controller
             'dni' => 'required|unique:pacientes,dni',
             'nombre' => 'required',
             'apellido' => 'required',
+            'trabajo' => 'nullable|string|max:255',
             'fecha_nacimiento' => 'required|date',
             'genero' => 'required',
             'celular_personal' => 'required',
