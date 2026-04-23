@@ -68,7 +68,7 @@
                                 </div>
                             </button>
                         </h2>
-                        <div id="h{{ $hist->id }}" class="accordion-collapse collapse" data-bs-parent="#historialToggles">
+                        <div id="h{{ $hist->id }}" class="accordion-collapse collapse">
                             <div class="accordion-body bg-white border-top">
                                 
                                 {{-- FILA SUPERIOR: INFORMACIÓN MÉDICA --}}
