@@ -50,7 +50,6 @@
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold">Fecha de Cita</label>
-                        {{-- Mantenemos el valor actual o el de hoy --}}
                         <input type="date" name="fecha" class="form-control" value="{{ date('Y-m-d') }}" required>
                     </div>
                     <div class="col-md-4 mb-3">
@@ -61,8 +60,11 @@
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold">Motivo de Cita</label>
-                        {{-- Añadimos el ID 'motivoCita' para el focus --}}
-                        <input type="text" name="motivo" id="motivoCita" class="form-control" placeholder="Ej: Control post-operatorio" required>
+                        {{-- CAMBIO: De Input a Select con opción por defecto 'Control' --}}
+                        <select name="motivo" id="motivoCita" class="form-select" required>
+                            <option value="Control" selected>Control</option>
+                            <option value="Paciente nuevo">Paciente nuevo</option>
+                        </select>
                     </div>
                 </div>
 
@@ -83,26 +85,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputDNI = document.getElementById('buscarDNI');
     const select = document.getElementById('selectPaciente');
     const status = document.getElementById('statusBusqueda');
-    const inputMotivo = document.getElementById('motivoCita');
+    const selectMotivo = document.getElementById('motivoCita');
     const options = Array.from(select.options).filter(opt => opt.value !== "");
 
-    // --- NUEVA LÓGICA PARA ACCIÓN RÁPIDA ---
     const urlParams = new URLSearchParams(window.location.search);
     const quickPacienteId = urlParams.get('paciente_id');
     const isQuickStart = urlParams.get('quick_start');
 
     if (quickPacienteId) {
-        // Buscamos la opción que coincida con el ID enviado
         const optionToSelect = options.find(opt => opt.value == quickPacienteId);
         if (optionToSelect) {
-            optionToSelect.style.display = "block"; // Lo mostramos
-            select.value = quickPacienteId; // Lo seleccionamos
+            optionToSelect.style.display = "block"; 
+            select.value = quickPacienteId; 
             status.innerHTML = '<span class="text-success fw-bold"><i class="bi bi-person-check"></i> Paciente recién registrado seleccionado automáticamente.</span>';
         }
     }
 
-    if (isQuickStart && inputMotivo) {
-        inputMotivo.focus(); // Focus en Motivo de Cita
+    if (isQuickStart && selectMotivo) {
+        selectMotivo.value = "Paciente nuevo";
+        selectMotivo.focus();
     }
     // ---------------------------------------
 
@@ -119,7 +120,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 opt.style.display = "block";
                 coincidentes.push(opt);
             } else {
-                // Si es el paciente de "acción rápida", no lo ocultamos si no hay búsqueda activa
                 if (opt.value == quickPacienteId && valApellido === "" && valDNI === "") {
                     opt.style.display = "block";
                 } else {
@@ -143,7 +143,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-    /* Hacemos que el select parezca una lista dinámica */
     #selectPaciente {
         overflow-y: auto;
         border-radius: 8px;

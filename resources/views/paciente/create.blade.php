@@ -3,7 +3,15 @@
 @section('content')
 <div class="container">
     <h2 class="mb-4 fw-bold">Registrar Nuevo Paciente</h2>
-    
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
     <form action="{{ route('pacientes.store') }}" method="POST" class="card shadow-sm border-0 p-4">
         @csrf
         
@@ -30,10 +38,10 @@
                 <label class="form-label fw-medium">Fecha Nacimiento</label>
                 <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento') }}" required>
             </div>
-            <div class="col-md-3">
-                <label class="form-label fw-medium">País de Nacimiento</label>
-                <input type="text" name="pais_nacimiento" class="form-control" value="{{ old('pais_nacimiento') }}" required>
-            </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">Lugar de Nacimiento</label>
+                    <input type="text" name="pais_nacimiento" class="form-control" value="{{ old('pais_nacimiento') }}" required>
+                </div>
         </div>
 
         <div class="row mb-3">
@@ -45,7 +53,6 @@
                 <label class="form-label fw-medium">Apellidos</label>
                 <input type="text" name="apellido" class="form-control" value="{{ old('apellido') }}" required>
             </div>
-            {{-- NUEVO CAMPO: TRABAJO --}}
             <div class="col-md-4">
                 <label class="form-label fw-medium text-primary">Ocupación / Trabajo</label>
                 <input type="text" name="trabajo" class="form-control" value="{{ old('trabajo') }}" placeholder="Ej: Estudiante, Ingeniero, etc.">
@@ -58,20 +65,14 @@
                 <label class="form-label fw-medium">Celular Personal</label>
                 <input type="text" name="celular_personal" class="form-control" value="{{ old('celular_personal') }}" required>
             </div>
-            <div class="col-md-8">
+            <div class="col-md-4">
                 <label class="form-label fw-medium">Correo Electrónico</label>
                 <input type="email" name="correo" class="form-control" value="{{ old('correo') }}" placeholder="ejemplo@correo.com">
             </div>
-        </div>
-
-        <div class="row mb-3">
+            {{-- SECCIÓN MODIFICADA: Se eliminó Dirección y se ajustó Distrito --}}
             <div class="col-md-4">
                 <label class="form-label fw-medium">Distrito</label>
                 <input type="text" name="distrito" class="form-control" value="{{ old('distrito') }}" required>
-            </div>
-            <div class="col-md-8">
-                <label class="form-label fw-medium">Dirección</label>
-                <input type="text" name="direccion" class="form-control" value="{{ old('direccion') }}" required>
             </div>
         </div>
 

@@ -36,7 +36,7 @@ class PacienteController extends Controller
             'celular_personal' => 'required',
             'correo' => 'nullable|email',
             'distrito' => 'required',
-            'direccion' => 'required',
+            'direccion' => 'nullable',
             'pais_nacimiento' => 'required'
         ],[
             'dni.required' => 'El campo DNI es obligatorio.',
