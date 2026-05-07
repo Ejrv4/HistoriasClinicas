@@ -3,15 +3,17 @@
 @section('content')
 <div class="container">
     <h2 class="mb-4 fw-bold">Registrar Nuevo Paciente</h2>
+    
     @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form action="{{ route('pacientes.store') }}" method="POST" class="card shadow-sm border-0 p-4">
         @csrf
         
@@ -38,10 +40,10 @@
                 <label class="form-label fw-medium">Fecha Nacimiento</label>
                 <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento') }}" required>
             </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-medium">Lugar de Nacimiento</label>
-                    <input type="text" name="pais_nacimiento" class="form-control" value="{{ old('pais_nacimiento') }}" required>
-                </div>
+            <div class="col-md-3">
+                <label class="form-label fw-medium">Lugar de Nacimiento</label>
+                <input type="text" name="pais_nacimiento" class="form-control" value="{{ old('pais_nacimiento') }}" required>
+            </div>
         </div>
 
         <div class="row mb-3">
@@ -69,10 +71,58 @@
                 <label class="form-label fw-medium">Correo Electrónico</label>
                 <input type="email" name="correo" class="form-control" value="{{ old('correo') }}" placeholder="ejemplo@correo.com">
             </div>
-            {{-- SECCIÓN MODIFICADA: Se eliminó Dirección y se ajustó Distrito --}}
+            
             <div class="col-md-4">
                 <label class="form-label fw-medium">Distrito</label>
-                <input type="text" name="distrito" class="form-control" value="{{ old('distrito') }}" required>
+                {{-- CAMBIO: Input conectado al datalist --}}
+                <input type="text" name="distrito" id="input-distrito" list="distritos-lima" class="form-control" value="{{ old('distrito') }}" placeholder="Escriba para buscar..." required autocomplete="off">
+                
+                {{-- LISTA DE DISTRITOS --}}
+                <datalist id="distritos-lima">
+                    <option value="Lima">
+                    <option value="Ancón">
+                    <option value="Ate">
+                    <option value="Barranco">
+                    <option value="Breña">
+                    <option value="Carabayllo">
+                    <option value="Chaclacayo">
+                    <option value="Chorrillos">
+                    <option value="Cieneguilla">
+                    <option value="Comas">
+                    <option value="El Agustino">
+                    <option value="Independencia">
+                    <option value="Jesús María">
+                    <option value="La Molina">
+                    <option value="La Victoria">
+                    <option value="Lince">
+                    <option value="Los Olivos">
+                    <option value="Lurigancho-Chosica">
+                    <option value="Lurín">
+                    <option value="Magdalena del Mar">
+                    <option value="Miraflores">
+                    <option value="Pachacámac">
+                    <option value="Pucusana">
+                    <option value="Pueblo Libre">
+                    <option value="Puente Piedra">
+                    <option value="Punta Hermosa">
+                    <option value="Punta Negra">
+                    <option value="Rímac">
+                    <option value="San Bartolo">
+                    <option value="San Borja">
+                    <option value="San Isidro">
+                    <option value="San Juan de Lurigancho">
+                    <option value="San Juan de Miraflores">
+                    <option value="San Luis">
+                    <option value="San Martín de Porres">
+                    <option value="San Miguel">
+                    <option value="Santa Anita">
+                    <option value="Santa María del Mar">
+                    <option value="Santa Rosa">
+                    <option value="Santiago de Surco">
+                    <option value="Surquillo">
+                    <option value="Villa El Salvador">
+                    <option value="Villa María del Triunfo">
+                </datalist>
             </div>
         </div>
 
