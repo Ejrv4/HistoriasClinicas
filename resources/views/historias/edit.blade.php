@@ -54,7 +54,8 @@
         @csrf
         @method('PUT')
         <input type="hidden" name="cita_id" value="{{ $cita->id }}">
-        <input type="hidden" name="paciente_id" value="{{ $paciente->id }}">
+        {{-- CAMBIO: Añadido id explícito para asegurar lectura inequívoca del script --}}
+        <input type="hidden" name="paciente_id" id="paciente_id_global" value="{{ $paciente->id }}">
 
         <div class="tab-content" id="hcTabsContent">
             
@@ -63,9 +64,12 @@
                 <div class="card border-0 shadow-sm p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
                         <h5 class="fw-bold text-primary mb-0"><i class="bi bi-file-earmark-medical me-2"></i>Antecedentes del Paciente</h5>
-                        <button type="button" onclick="guardarAntecedentesManual(event)" class="btn btn-success fw-bold shadow-sm">
-                            <i class="bi bi-save me-2"></i>ACTUALIZAR ANTECEDENTES
-                        </button>
+                        <div class="d-flex align-items-center gap-3">
+                            <span id="save-status" class="small fw-semibold"></span>
+                            <button type="button" onclick="guardarAntecedentesManual(event)" class="btn btn-success fw-bold shadow-sm">
+                                <i class="bi bi-save me-2"></i>ACTUALIZAR ANTECEDENTES
+                            </button>
+                        </div>
                     </div>
                     
                     <div id="formAntecedentesContenedor">
@@ -91,7 +95,7 @@
                 </div>
             </div>
 
-            {{-- PESTAÑA HISTORIA CLÍNICA (CON DIAGNÓSTICOS MÚLTIPLES) --}}
+            {{-- PESTAÑA HISTORIA CLÍNICA --}}
             <div class="tab-pane fade" id="consulta" role="tabpanel">
                 <div class="row">
                     <div class="col-md-3">
@@ -123,11 +127,12 @@
                             <div id="diagnosticos-container">
                                 <label class="fw-bold text-secondary small mb-2 text-uppercase d-block">Diagnósticos de la Atención</label>
                                 
-                                {{-- CARGAR DIAGNÓSTICOS EXISTENTES --}}
+                                {{-- CARGAR DIAGNÓSTICOS EXISTENTES CON LOS SELECCIONES INTELIGENTES --}}
                                 @forelse($historia->diagnosticos as $index => $diag)
                                     <div class="row g-2 mb-2 diagnostico-row" id="diag-row-{{ $index }}">
                                         <div class="col-md-8">
-                                            <input type="text" name="diagnosticos[{{ $index }}][diagnostico]" class="form-control diag-input" value="{{ $diag->diagnostico }}" placeholder="Descripción del diagnóstico">
+                                            {{-- CAMBIO: Añadido list="lista_descripciones_cies" para filtrado descriptivo cruzado --}}
+                                            <input type="text" name="diagnosticos[{{ $index }}][diagnostico]" class="form-control diag-input" value="{{ $diag->diagnostico }}" list="lista_descripciones_cies" autocomplete="off" placeholder="Descripción del diagnóstico">
                                         </div>
                                         <div class="col-md-3">
                                             <input type="text" name="diagnosticos[{{ $index }}][cie_10]" class="form-control cie-input" value="{{ $diag->cie_10 }}" list="lista_cies" autocomplete="off" placeholder="CIE-10">
@@ -141,13 +146,12 @@
                                         </div>
                                     </div>
                                 @empty
-                                    {{-- Si por alguna razón no hay diagnósticos, mostrar uno vacío --}}
-                                    <div class="row g-2 mb-2 diagnostico-row">
+                                    <div class="row g-2 mb-2 diagnostico-row" id="diag-row-0">
                                         <div class="col-md-8">
-                                            <input type="text" name="diagnosticos[0][diagnostico]" class="form-control diag-input">
+                                            <input type="text" name="diagnosticos[0][diagnostico]" class="form-control diag-input" list="lista_descripciones_cies" autocomplete="off">
                                         </div>
                                         <div class="col-md-3">
-                                            <input type="text" name="diagnosticos[0][cie_10]" class="form-control cie-input" list="lista_cies">
+                                            <input type="text" name="diagnosticos[0][cie_10]" class="form-control cie-input" list="lista_cies" autocomplete="off">
                                         </div>
                                         <div class="col-md-1"></div>
                                     </div>
@@ -256,6 +260,8 @@
             </div>
         </div>
     </form>
+    
+    {{-- ACORDEÓN DE HISTORIAL HISTÓRICO --}}
     <div class="mt-5 mb-5">
         <h5 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history me-2 text-primary"></i>Historial de Atenciones Previas</h5>
         <div class="accordion shadow-sm" id="historialToggles">
@@ -283,37 +289,6 @@
                                     <div class="p-2 bg-light rounded border small text-dark">{{ $hist->plan }}</div>
                                 </div>
                             </div>
-
-                            @if($hist->cita && $hist->cita->recetas->count() > 0)
-                                <h6 class="fw-bold text-danger small text-uppercase mb-2"><i class="bi bi-prescription2 me-1"></i>Medicamentos Recetados</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-bordered align-middle bg-light" style="font-size: 0.85rem;">
-                                        <thead class="table-secondary text-muted small text-center">
-                                            <tr>
-                                                <th class="text-start">Medicamento / Presentación</th>
-                                                <th>Dosis/Vía</th>
-                                                <th>Frecuencia</th>
-                                                <th>Duración</th>
-                                                <th>Cant.</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($hist->cita->recetas as $r)
-                                                <tr class="text-center">
-                                                    <td class="text-start">
-                                                        <strong>{{ $r->medicamento }}</strong><br>
-                                                        <small class="text-muted">{{ $r->presentacion }}</small>
-                                                    </td>
-                                                    <td>{{ $r->dosis }} - {{ $r->via_administracion }}</td>
-                                                    <td>Cada {{ $r->frecuencia }}</td>
-                                                    <td>Por {{ $r->duracion }}</td>
-                                                    <td class="fw-bold text-primary">{{ $r->cantidad_total ?? 'N/A' }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -324,15 +299,22 @@
     </div>
 </div>
 
-{{-- DATALISTS GLOBALES --}}
+{{-- DATALISTS COMBINADOS EVITANDO CONGELAMIENTO POR CÓDIGOS DUPLICADOS --}}
 <datalist id="lista_nombres_med">
     @foreach($medicamentosLista->unique('nombre') as $m)
         <option value="{{ $m->nombre }}">
     @endforeach
 </datalist>
+
 <datalist id="lista_cies">
     @foreach($cie10Lista as $cie)
-        <option value="{{ $cie->codigo }}">{{ $cie->descripcion }}</option>
+        <option value="{{ $cie->codigo }} — {{ $cie->descripcion }}"></option>
+    @endforeach
+</datalist>
+
+<datalist id="lista_descripciones_cies">
+    @foreach($cie10Lista as $cie)
+        <option value="{{ $cie->descripcion }} — {{ $cie->codigo }}"></option>
     @endforeach
 </datalist>
 
@@ -340,24 +322,24 @@
     const baseMedicamentos = @json($medicamentosLista);
     const baseCie = @json($cie10Lista);
     let recIdx = 0;
-    let diagCounter = {{ $historia->diagnosticos->count() }};
+    let diagCounter = {{ $historia->diagnosticos->count() > 0 ? $historia->diagnosticos->count() : 1 }};
+    let formChanged = false;
 
     // --- CARGA INICIAL ---
     document.addEventListener('DOMContentLoaded', function() {
-        // Cargar Recetas
         const recetasExistentes = @json($cita->recetas);
         recetasExistentes.forEach(r => {
             injectReceta(r.medicamento, r.concentracion, r.presentacion, r.dosis, r.via_administracion, r.frecuencia, r.duracion, r.cantidad_total);
         });
     });
 
-    // --- GESTIÓN DE DIAGNÓSTICOS ---
+    // --- GESTIÓN DE DIAGNÓSTICOS MÚLTIPLES ---
     function agregarFilaDiagnostico() {
         const container = document.getElementById('diagnosticos-container');
         const html = `
             <div class="row g-2 mb-2 diagnostico-row" id="diag-row-${diagCounter}">
                 <div class="col-md-8">
-                    <input type="text" name="diagnosticos[${diagCounter}][diagnostico]" class="form-control diag-input">
+                    <input type="text" name="diagnosticos[${diagCounter}][diagnostico]" class="form-control diag-input" list="lista_descripciones_cies" autocomplete="off">
                 </div>
                 <div class="col-md-3">
                     <input type="text" name="diagnosticos[${diagCounter}][cie_10]" class="form-control cie-input" list="lista_cies" autocomplete="off">
@@ -377,13 +359,36 @@
         if(row) row.remove();
     }
 
-    // Delegación para autocompletado CIE-10
+    // --- INTERRUPTOR DE BÚSQUEDA INTELIGENTE COMPARTIDA ---
     document.getElementById('diagnosticos-container').addEventListener('input', function(e) {
+        const row = e.target.closest('.diagnostico-row');
+        if (!row) return;
+
+        const inputDiag = row.querySelector('.diag-input');
+        const inputCie = row.querySelector('.cie-input');
+        const val = e.target.value;
+
+        // Buscar interactuando desde el input de código CIE-10
         if (e.target.classList.contains('cie-input')) {
-            const val = e.target.value.trim().toUpperCase();
-            const coincidencia = baseCie.find(c => c.codigo.toUpperCase() === val);
-            if (coincidencia) {
-                e.target.closest('.diagnostico-row').querySelector('.diag-input').value = coincidencia.descripcion;
+            if (val.includes(' — ')) {
+                const partes = val.split(' — ');
+                inputCie.value = partes[0].trim();
+                inputDiag.value = partes[1].trim();
+            } else {
+                const coincidencia = baseCie.find(c => c.codigo.trim().toUpperCase() === val.trim().toUpperCase());
+                if (coincidencia) inputDiag.value = coincidencia.descripcion;
+            }
+        }
+
+        // Buscar interactuando desde el input de descripción Diagnóstico de Atención
+        if (e.target.classList.contains('diag-input')) {
+            if (val.includes(' — ')) {
+                const partes = val.split(' — ');
+                inputDiag.value = partes[0].trim();
+                inputCie.value = partes[1].trim();
+            } else {
+                const coincidencia = baseCie.find(c => c.descripcion.trim().toUpperCase() === val.trim().toUpperCase());
+                if (coincidencia) inputCie.value = coincidencia.codigo;
             }
         }
     });
@@ -478,62 +483,80 @@
 
     // --- ANTECEDENTES MANUAL ---
     async function guardarAntecedentesManual(event) {
+        const statusLabel = document.getElementById('save-status');
         const btn = event.currentTarget;
-        const formDiv = document.getElementById('formAntecedentesContenedor');
-        const inputs = formDiv.querySelectorAll('textarea');
-        const payload = { paciente_id: document.querySelector('input[name="paciente_id"]').value };
-        inputs.forEach(i => payload[i.name] = i.value);
+        const pacienteId = document.getElementById('paciente_id_global').value;
+        
+        if (!pacienteId) {
+            alert("Error: No se encontró el ID del paciente.");
+            return;
+        }
+
         btn.disabled = true;
+        statusLabel.className = 'text-muted';
+        statusLabel.innerHTML = '<i class="bi bi-arrow-repeat spinner-border spinner-border-sm me-1"></i>Guardando...';
+        
+        const payload = {
+            paciente_id: pacienteId,
+            Medico: document.querySelector('textarea[name="Medico"]').value,
+            Quirúrgico: document.querySelector('textarea[name="Quirúrgico"]').value,
+            Alergia: document.querySelector('textarea[name="Alergia"]').value,
+            Medicación: document.querySelector('textarea[name="Medicación"]').value
+        };
+        
         try {
             const response = await fetch("{{ route('antecedentes.guardar_todo') }}", {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
                 body: JSON.stringify(payload)
             });
-            if (response.ok) alert("Antecedentes actualizados.");
-        } finally { btn.disabled = false; }
+            
+            const result = await response.json();
+            
+            if (response.ok && result.status === 'success') {
+                statusLabel.className = 'text-success fw-bold';
+                statusLabel.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardado correctamente';
+                setTimeout(() => { statusLabel.innerHTML = ''; }, 3000);
+            } else {
+                throw new Error(result.message || 'Error desconocido');
+            }
+        } catch (error) {
+            statusLabel.className = 'text-danger fw-bold';
+            statusLabel.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>Error al guardar`;
+        } finally {
+            btn.disabled = false;
+        }
     }
 
-    //PROTECCIÓN DE CAMBIOS NO GUARDADOS ---
-    let formChanged = false;
-
-    // Detectar cualquier cambio en los campos del formulario
+    // --- ADVERTENCIA DE CAMBIOS ---
     const atencionForm = document.getElementById('formAtencionMedica');
-    atencionForm.addEventListener('input', () => {
-        formChanged = true;
-    });
+    atencionForm.addEventListener('input', () => { formChanged = true; });
 
-    // Detectar salida mediante enlaces internos (Botón Regresar, Menú, etc.)
     document.addEventListener('click', function (e) {
-        const target = e.target.closest('a'); // Buscar si se hizo clic en un enlace
-        
-        // Si hay cambios, es un enlace real (tiene href) y no es una pestaña (tab)
+        const target = e.target.closest('a');
         if (formChanged && target && target.href && !target.hasAttribute('data-bs-toggle')) {
             const confirmacion = confirm("⚠️ No se han guardado los cambios de la atención actual. ¿Está seguro de que desea salir sin guardar?");
-            if (!confirmacion) {
-                e.preventDefault(); // Detener la navegación
-            }
+            if (!confirmacion) e.preventDefault();
         }
     });
 
-    // Detectar cierre de pestaña o recarga del navegador (F5)
     window.addEventListener('beforeunload', function (e) {
         if (formChanged) {
             e.preventDefault();
-            e.returnValue = ''; // Requerido por navegadores modernos para mostrar el aviso nativo
+            e.returnValue = ''; 
         }
     });
 
-    // Desactivar la advertencia cuando se envíe el formulario correctamente
-    atencionForm.addEventListener('submit', () => {
-        formChanged = false; // Permitir la salida porque ya se está guardando
-    });
-
+    atencionForm.addEventListener('submit', () => { formChanged = false; });
 </script>
 
 <style>
-    .nav-tabs .nav-link { color: #6c757d; border: none; padding: 12px 25px; }
-    .nav-tabs .nav-link.active { color: #ffffff !important; background-color: #2c3e50 !important; border-radius: 8px 8px 0 0; }
+    .nav-tabs .nav-link { color: #6c757d; border: none; border-bottom: 3px solid transparent; transition: all 0.3s ease; padding: 12px 25px; border-radius: 8px 8px 0 0; }
+    .nav-tabs .nav-link.active { color: #ffffff !important; background-color: #2c3e50 !important; border-bottom: 3px solid #1a252f; }
     .nav-tabs .nav-link#receta-tab.active { background-color: #c0392b !important; }
     textarea.form-control { resize: none; border-radius: 8px; }
     .btn-outline-danger.rounded-circle { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; padding: 0; }

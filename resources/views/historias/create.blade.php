@@ -53,7 +53,6 @@
 
     <form action="{{ route('historias.store') }}" method="POST" id="formAtencionMedica">
         @csrf
-        {{-- CAMBIO: Movido aquí arriba para asegurar lectura global inmediata por JS --}}
         <input type="hidden" name="cita_id" value="{{ $cita->id }}">
         <input type="hidden" name="paciente_id" id="paciente_id_global" value="{{ $cita->paciente_id }}">
 
@@ -126,10 +125,11 @@
                             
                             {{-- SECCIÓN DE DIAGNÓSTICOS MÚLTIPLES --}}
                             <div id="diagnosticos-container">
-                                <div class="row g-2 mb-2 diagnostico-row">
+                                <div class="row g-2 mb-2 diagnostico-row" id="diag-row-0">
                                     <div class="col-md-8">
-                                        <label class="fw-bold text-secondary small mb-2 text-uppercase">Diagnóstico</label>
-                                        <input type="text" name="diagnosticos[0][diagnostico]" class="form-control diag-input">
+                                        <label class="fw-bold text-secondary small mb-2 text-uppercase">Diagnóstico de Atención</label>
+                                        {{-- CAMBIO: Añadido list="lista_descripciones_cies" para buscar por texto descriptivo libremente --}}
+                                        <input type="text" name="diagnosticos[0][diagnostico]" class="form-control diag-input" list="lista_descripciones_cies" autocomplete="off">
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label fw-bold text-secondary small mb-2 text-uppercase">CIE-10</label>
@@ -278,37 +278,6 @@
                                     <div class="p-2 bg-light rounded border small text-dark">{{ $hist->plan }}</div>
                                 </div>
                             </div>
-
-                            @if($hist->cita && $hist->cita->recetas->count() > 0)
-                                <h6 class="fw-bold text-danger small text-uppercase mb-2"><i class="bi bi-prescription2 me-1"></i>Medicamentos Recetados</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-bordered align-middle bg-light" style="font-size: 0.85rem;">
-                                        <thead class="table-secondary text-muted small text-center">
-                                            <tr>
-                                                <th class="text-start">Medicamento / Presentación</th>
-                                                <th>Dosis/Vía</th>
-                                                <th>Frecuencia</th>
-                                                <th>Duración</th>
-                                                <th>Cant.</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($hist->cita->recetas as $r)
-                                                <tr class="text-center">
-                                                    <td class="text-start">
-                                                        <strong>{{ $r->medicamento }}</strong><br>
-                                                        <small class="text-muted">{{ $r->presentacion }}</small>
-                                                    </td>
-                                                    <td>{{ $r->dosis }} - {{ $r->via_administracion }}</td>
-                                                    <td>Cada {{ $r->frecuencia }}</td>
-                                                    <td>Por {{ $r->duracion }}</td>
-                                                    <td class="fw-bold text-primary">{{ $r->cantidad_total ?? 'N/A' }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -319,14 +288,21 @@
     </div>
 </div>
 
+{{-- DATALISTS MANTENIENDO VALORES ÚNICOS PARA EVITAR ERRORES DE CLIC DE DUPLICADOS --}}
 <datalist id="lista_cies">
     @foreach($cie10Lista as $cie)
-        <option value="{{ $cie->codigo }}">{{ $cie->descripcion }}</option>
+        {{-- Usamos la combinación 'Código - Descripción' en el value para diferenciar duplicados en el DOM --}}
+        <option value="{{ $cie->codigo }} — {{ $cie->descripcion }}"></option>
+    @endforeach
+</datalist>
+
+<datalist id="lista_descripciones_cies">
+    @foreach($cie10Lista as $cie)
+        <option value="{{ $cie->descripcion }} — {{ $cie->codigo }}"></option>
     @endforeach
 </datalist>
 
 <script>
-    // --- PROTECCIÓN DE CAMBIOS NO GUARDADOS ---
     let formChanged = false;
 
     // --- 1. GESTIÓN DE DIAGNÓSTICOS MÚLTIPLES ---
@@ -338,7 +314,7 @@
         const html = `
             <div class="row g-2 mb-2 diagnostico-row" id="diag-row-${diagCounter}">
                 <div class="col-md-8">
-                    <input type="text" name="diagnosticos[${diagCounter}][diagnostico]" class="form-control diag-input">
+                    <input type="text" name="diagnosticos[${diagCounter}][diagnostico]" class="form-control diag-input" list="lista_descripciones_cies" autocomplete="off">
                 </div>
                 <div class="col-md-3">
                     <input type="text" name="diagnosticos[${diagCounter}][cie_10]" class="form-control cie-input" list="lista_cies" autocomplete="off">
@@ -357,15 +333,50 @@
         document.getElementById(`diag-row-${id}`).remove();
     }
 
+    // --- INTERRUPTOR DE BÚSQUEDA INTELIGENTE SIN BLOQUEO DE DUPLICADOS ---
     document.getElementById('diagnosticos-container').addEventListener('input', function(e) {
+        const row = e.target.closest('.diagnostico-row');
+        if (!row) return;
+
+        const inputDiag = row.querySelector('.diag-input');
+        const inputCie = row.querySelector('.cie-input');
+        const val = e.target.value;
+
+        // Caso A: El usuario interactúa o selecciona desde el input de CIE-10
         if (e.target.classList.contains('cie-input')) {
-            const val = e.target.value.trim().toUpperCase();
-            const row = e.target.closest('.diagnostico-row');
-            const inputDiag = row.querySelector('.diag-input');
-            
-            const coincidencia = baseCie.find(c => c.codigo.toUpperCase() === val);
-            if (coincidencia) {
-                inputDiag.value = coincidencia.descripcion;
+            if (val.includes(' — ')) {
+                const partes = val.split(' — ');
+                const codigoLimpio = partes[0].trim();
+                const descripcionLimpia = partes[1].trim();
+
+                // Separamos los valores permitiendo modificaciones posteriores individuales
+                inputCie.value = codigoLimpio;
+                inputDiag.value = descripcionLimpia;
+            } else {
+                // Búsqueda manual letra por letra (insensible a mayúsculas/minusculas)
+                const coincidencia = baseCie.find(c => c.codigo.trim().toUpperCase() === val.trim().toUpperCase());
+                if (coincidencia) {
+                    inputDiag.value = coincidencia.descripcion;
+                }
+            }
+        }
+
+        // Caso B: El usuario interactúa o selecciona desde el input de Diagnóstico de Atención
+        if (e.target.classList.contains('diag-input')) {
+            if (val.includes(' — ')) {
+                const partes = val.split(' — ');
+                const descripcionLimpia = partes[0].trim();
+                const codigoLimpio = partes[1].trim();
+
+                // Separamos los valores permitiendo modificaciones posteriores individuales
+                inputDiag.value = descripcionLimpia;
+                inputCie.value = codigoLimpio;
+            } else {
+                // Búsqueda manual por descripción exacta letra por letra (insensible a mayúsculas/minusculas)
+                const coincidencia = baseCie.find(c => c.descripcion.trim().toUpperCase() === val.trim().toUpperCase());
+                if (coincidencia) {
+                    inputCie.value = coincidencia.codigo;
+                }
             }
         }
     });
@@ -472,66 +483,60 @@
 
     // --- 5. GUARDAR ANTECEDENTES MANUAL ---
     async function guardarAntecedentesManual(event) {
-    const statusLabel = document.getElementById('save-status');
-    const btn = event.currentTarget;
-    
-    // 1. Obtenemos de forma segura el paciente_id global
-    const pacienteId = document.getElementById('paciente_id_global').value;
-    
-    if (!pacienteId) {
-        alert("Error: No se encontró el ID del paciente.");
-        return;
-    }
-
-    btn.disabled = true;
-    statusLabel.className = 'text-muted';
-    statusLabel.innerHTML = '<i class="bi bi-arrow-repeat spinner-border spinner-border-sm me-1"></i>Guardando...';
-    
-    const payload = {
-        paciente_id: pacienteId,
-        Medico: document.querySelector('textarea[name="Medico"]').value,
-        Quirúrgico: document.querySelector('textarea[name="Quirúrgico"]').value,
-        Alergia: document.querySelector('textarea[name="Alergia"]').value,
-        Medicación: document.querySelector('textarea[name="Medicación"]').value
-    };
-    
-    try {
-        const response = await fetch("{{ route('antecedentes.guardar_todo') }}", {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
+        const statusLabel = document.getElementById('save-status');
+        const btn = event.currentTarget;
+        const pacienteId = document.getElementById('paciente_id_global').value;
         
-        const result = await response.json();
-        
-        if (response.ok && result.status === 'success') {
-            statusLabel.className = 'text-success fw-bold';
-            statusLabel.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardado correctamente';
-            
-            setTimeout(() => { statusLabel.innerHTML = ''; }, 3000);
-        } else {
-            throw new Error(result.message || 'Error desconocido');
+        if (!pacienteId) {
+            alert("Error: No se encontró el ID del paciente.");
+            return;
         }
-    } catch (error) {
-        statusLabel.className = 'text-danger fw-bold';
-        statusLabel.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>Error al guardar`;
-        console.error("Detalle del error:", error);
-    } finally {
-        btn.disabled = false;
-    }
-}
 
-    // Detectar cualquier cambio en los campos del formulario
+        btn.disabled = true;
+        statusLabel.className = 'text-muted';
+        statusLabel.innerHTML = '<i class="bi bi-arrow-repeat spinner-border spinner-border-sm me-1"></i>Guardando...';
+        
+        const payload = {
+            paciente_id: pacienteId,
+            Medico: document.querySelector('textarea[name="Medico"]').value,
+            Quirúrgico: document.querySelector('textarea[name="Quirúrgico"]').value,
+            Alergia: document.querySelector('textarea[name="Alergia"]').value,
+            Medicación: document.querySelector('textarea[name="Medicación"]').value
+        };
+        
+        try {
+            const response = await fetch("{{ route('antecedentes.guardar_todo') }}", {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.status === 'success') {
+                statusLabel.className = 'text-success fw-bold';
+                statusLabel.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardado correctamente';
+                setTimeout(() => { statusLabel.innerHTML = ''; }, 3000);
+            } else {
+                throw new Error(result.message || 'Error desconocido');
+            }
+        } catch (error) {
+            statusLabel.className = 'text-danger fw-bold';
+            statusLabel.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>Error al guardar`;
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
     const atencionForm = document.getElementById('formAtencionMedica');
     atencionForm.addEventListener('input', () => {
         formChanged = true;
     });
 
-    // Detectar salida mediante enlaces internos (Botón Regresar, Menú, etc.)
     document.addEventListener('click', function (e) {
         const target = e.target.closest('a');
         if (formChanged && target && target.href && !target.hasAttribute('data-bs-toggle')) {
@@ -542,7 +547,6 @@
         }
     });
 
-    // Detectar cierre de pestaña o recarga del navegador (F5)
     window.addEventListener('beforeunload', function (e) {
         if (formChanged) {
             e.preventDefault();
@@ -550,7 +554,6 @@
         }
     });
 
-    // Desactivar la advertencia cuando se envíe el formulario correctamente
     atencionForm.addEventListener('submit', () => {
         formChanged = false; 
     });
