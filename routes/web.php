@@ -34,6 +34,7 @@ Route::get('/medicamentos', [App\Http\Controllers\MedicamentoController::class, 
 Route::post('/medicamentos', [App\Http\Controllers\MedicamentoController::class, 'store'])->name('medicamentos.store');
 Route::put('/medicamentos/{id}', [App\Http\Controllers\MedicamentoController::class, 'updateInline'])->name('medicamentos.updateInline');
 Route::delete('/medicamentos/{id}', [App\Http\Controllers\MedicamentoController::class, 'destroy'])->name('medicamentos.destroy');
+Route::post('/medicamentos/importar', [App\Http\Controllers\MedicamentoController::class, 'importar'])->name('medicamentos.importar');
 
 Route::get('/receta/pdf/{cita_id}', [RecetaController::class, 'generarPDF'])->name('receta.pdf');
 

@@ -186,11 +186,13 @@
                             <div class="col-md-2">
                                 <label class="small fw-bold text-muted">VÍA</label>
                                 <select id="rec_via" class="form-select">
-                                    <option value="Via Oral">Via Oral</option>
-                                    <option value="Intramuscular">Intramuscular</option>
-                                    <option value="Sublingual">Sublingual</option>
-                                    <option value="Tópico">Tópico</option>
-                                    <option value="Oftálmica">Oftálmica</option>
+                                    <option value="VÍA ORAL">VÍA ORAL</option>
+                                    <option value="VÍA ENDOVENOSA">VÍA ENDOVENOSA</option>
+                                    <option value="VÍA INTRAMUSCULAR">VÍA INTRAMUSCULAR</option>
+                                    <option value="VÍA TÓPICA">VÍA TÓPICA</option>
+                                    <option value="VÍA ANAL">VÍA ANAL</option>
+                                    <option value="VÍA SUBCUTÁNEA">VÍA SUBCUTÁNEA</option>
+                                    <option value="VÍA RECTAL">VÍA RECTAL</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
