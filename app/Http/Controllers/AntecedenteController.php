@@ -17,8 +17,6 @@ class AntecedenteController extends Controller
 
         \App\Models\Antecedente::create($request->all());
 
-        // Regresa a la página anterior pero añade un fragmento a la URL 
-        // para que el navegador se mantenga en la pestaña de antecedentes
         return redirect()->to(url()->previous() . '#pestana-antecedentes')
                         ->with('success', 'Antecedente actualizado.');
     }
@@ -28,7 +26,6 @@ class AntecedenteController extends Controller
     try {
         $paciente_id = $request->paciente_id;
         
-        // MAPEADO CORREGIDO: Usamos términos cortos para no desbordar la columna
         $mapeo = [
             'Medico'      => 'Médico',    
             'Quirúrgico'  => 'Quirúrgico', 
@@ -37,8 +34,8 @@ class AntecedenteController extends Controller
         ];
 
         foreach ($mapeo as $input => $tipoBD) {
-            // Solo guardamos si hay texto o para limpiar
-            \App\Models\Antecedente::updateOrCreate(
+
+        \App\Models\Antecedente::updateOrCreate(
                 [
                     'paciente_id' => $paciente_id, 
                     'tipo' => $tipoBD
@@ -51,7 +48,6 @@ class AntecedenteController extends Controller
 
         return response()->json(['status' => 'success'], 200);
     } catch (\Exception $e) {
-        // Esto nos dirá exactamente qué falló si vuelve a ocurrir
         return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
     }
 }

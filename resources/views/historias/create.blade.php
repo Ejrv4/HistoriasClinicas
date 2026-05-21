@@ -8,7 +8,7 @@
             <i class="bi bi-arrow-left me-2"></i>REGRESAR
         </a>
     </div>
-    {{-- Encabezado del Paciente (Sin cambios) --}}
+    {{-- Encabezado del Paciente --}}
     <div class="card shadow-sm border-0 mb-4 bg-light">
         <div class="card-body py-3">
             <div class="row align-items-center">
@@ -53,8 +53,9 @@
 
     <form action="{{ route('historias.store') }}" method="POST" id="formAtencionMedica">
         @csrf
+        {{-- CAMBIO: Movido aquí arriba para asegurar lectura global inmediata por JS --}}
         <input type="hidden" name="cita_id" value="{{ $cita->id }}">
-        <input type="hidden" name="paciente_id" value="{{ $cita->paciente_id }}">
+        <input type="hidden" name="paciente_id" id="paciente_id_global" value="{{ $cita->paciente_id }}">
 
         <div class="tab-content" id="hcTabsContent">
             
@@ -63,9 +64,12 @@
                 <div class="card border-0 shadow-sm p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
                         <h5 class="fw-bold text-primary mb-0"><i class="bi bi-file-earmark-medical me-2"></i>Antecedentes del Paciente</h5>
-                        <button type="button" onclick="guardarAntecedentesManual(event)" class="btn btn-success fw-bold shadow-sm">
-                            <i class="bi bi-save me-2"></i>GUARDAR ANTECEDENTES
-                        </button>
+                        <div class="d-flex align-items-center gap-3">
+                            <span id="save-status" class="small fw-semibold"></span>
+                            <button type="button" onclick="guardarAntecedentesManual(event)" class="btn btn-success fw-bold shadow-sm">
+                                <i class="bi bi-save me-2"></i>GUARDAR ANTECEDENTES
+                            </button>
+                        </div>
                     </div>
                     
                     <div id="formAntecedentesContenedor">
@@ -91,7 +95,7 @@
                 </div>
             </div>
 
-            {{-- PESTAÑA HISTORIA CLÍNICA (MODIFICADA) --}}
+            {{-- PESTAÑA HISTORIA CLÍNICA --}}
             <div class="tab-pane fade" id="consulta" role="tabpanel">
                 <div class="row">
                     <div class="col-md-3">
@@ -128,11 +132,10 @@
                                         <input type="text" name="diagnosticos[0][diagnostico]" class="form-control diag-input">
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="fw-bold text-secondary small mb-2 text-uppercase">CIE-10</label>
+                                        <label class="form-label fw-bold text-secondary small mb-2 text-uppercase">CIE-10</label>
                                         <input type="text" name="diagnosticos[0][cie_10]" class="form-control cie-input" list="lista_cies" autocomplete="off">
                                     </div>
                                     <div class="col-md-1 d-flex align-items-end pb-1">
-                                        {{-- El primer diagnóstico no tiene botón X para obligar a tener al menos uno --}}
                                     </div>
                                 </div>
                             </div>
@@ -150,7 +153,7 @@
                 </div>
             </div>
 
-            {{-- PESTAÑA RECETA MÉDICA (IDENTIFICACIÓN ARRIBA) --}}
+            {{-- PESTAÑA RECETA MÉDICA --}}
             <div class="tab-pane fade" id="pestana-receta" role="tabpanel">
                 <div class="card border-0 shadow-sm p-4">
                     <div class="bg-light p-3 rounded border mb-4">
@@ -323,6 +326,9 @@
 </datalist>
 
 <script>
+    // --- PROTECCIÓN DE CAMBIOS NO GUARDADOS ---
+    let formChanged = false;
+
     // --- 1. GESTIÓN DE DIAGNÓSTICOS MÚLTIPLES ---
     let diagCounter = 1;
     const baseCie = @json($cie10Lista);
@@ -351,7 +357,6 @@
         document.getElementById(`diag-row-${id}`).remove();
     }
 
-    // Autocompletado delegando eventos al contenedor de diagnósticos
     document.getElementById('diagnosticos-container').addEventListener('input', function(e) {
         if (e.target.classList.contains('cie-input')) {
             const val = e.target.value.trim().toUpperCase();
@@ -465,31 +470,60 @@
         document.getElementById(`hidden_${id}`).remove();
     }
 
-    // --- 5. ANTECEDENTES ---
+    // --- 5. GUARDAR ANTECEDENTES MANUAL ---
     async function guardarAntecedentesManual(event) {
-        const statusLabel = document.getElementById('save-status');
-        const formDiv = document.getElementById('formAntecedentesContenedor');
-        const inputs = formDiv.querySelectorAll('textarea');
-        const pacienteId = document.querySelector('input[name="paciente_id"]').value;
-        const btn = event.currentTarget;
-        btn.disabled = true;
-        statusLabel.innerHTML = 'Guardando...';
-        const payload = { paciente_id: pacienteId };
-        inputs.forEach(i => payload[i.name] = i.value);
-        try {
-            const response = await fetch("{{ route('antecedentes.guardar_todo') }}", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify(payload)
-            });
-            if (response.ok) {
-                statusLabel.innerHTML = '<span class="text-success fw-bold">Guardado</span>';
-                setTimeout(() => { btn.disabled = false; }, 1000);
-            }
-        } catch (error) { btn.disabled = false; }
+    const statusLabel = document.getElementById('save-status');
+    const btn = event.currentTarget;
+    
+    // 1. Obtenemos de forma segura el paciente_id global
+    const pacienteId = document.getElementById('paciente_id_global').value;
+    
+    if (!pacienteId) {
+        alert("Error: No se encontró el ID del paciente.");
+        return;
     }
-    // --- 6. PROTECCIÓN DE CAMBIOS NO GUARDADOS ---
-    let formChanged = false;
+
+    btn.disabled = true;
+    statusLabel.className = 'text-muted';
+    statusLabel.innerHTML = '<i class="bi bi-arrow-repeat spinner-border spinner-border-sm me-1"></i>Guardando...';
+    
+    const payload = {
+        paciente_id: pacienteId,
+        Medico: document.querySelector('textarea[name="Medico"]').value,
+        Quirúrgico: document.querySelector('textarea[name="Quirúrgico"]').value,
+        Alergia: document.querySelector('textarea[name="Alergia"]').value,
+        Medicación: document.querySelector('textarea[name="Medicación"]').value
+    };
+    
+    try {
+        const response = await fetch("{{ route('antecedentes.guardar_todo') }}", {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.status === 'success') {
+            statusLabel.className = 'text-success fw-bold';
+            statusLabel.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardado correctamente';
+            
+            setTimeout(() => { statusLabel.innerHTML = ''; }, 3000);
+        } else {
+            throw new Error(result.message || 'Error desconocido');
+        }
+    } catch (error) {
+        statusLabel.className = 'text-danger fw-bold';
+        statusLabel.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>Error al guardar`;
+        console.error("Detalle del error:", error);
+    } finally {
+        btn.disabled = false;
+    }
+}
 
     // Detectar cualquier cambio en los campos del formulario
     const atencionForm = document.getElementById('formAtencionMedica');
@@ -499,13 +533,11 @@
 
     // Detectar salida mediante enlaces internos (Botón Regresar, Menú, etc.)
     document.addEventListener('click', function (e) {
-        const target = e.target.closest('a'); // Buscar si se hizo clic en un enlace
-        
-        // Si hay cambios, es un enlace real (tiene href) y no es una pestaña (tab)
+        const target = e.target.closest('a');
         if (formChanged && target && target.href && !target.hasAttribute('data-bs-toggle')) {
             const confirmacion = confirm("⚠️ No se han guardado los cambios de la atención actual. ¿Está seguro de que desea salir sin guardar?");
             if (!confirmacion) {
-                e.preventDefault(); // Detener la navegación
+                e.preventDefault();
             }
         }
     });
@@ -514,15 +546,14 @@
     window.addEventListener('beforeunload', function (e) {
         if (formChanged) {
             e.preventDefault();
-            e.returnValue = ''; // Requerido por navegadores modernos para mostrar el aviso nativo
+            e.returnValue = ''; 
         }
     });
 
     // Desactivar la advertencia cuando se envíe el formulario correctamente
     atencionForm.addEventListener('submit', () => {
-        formChanged = false; // Permitir la salida porque ya se está guardando
+        formChanged = false; 
     });
-
 </script>
 
 <style>

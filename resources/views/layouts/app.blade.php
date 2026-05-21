@@ -74,7 +74,7 @@
         
         <div class="nav flex-column mt-2">
             <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                <i class="bi bi-speedometer2"></i> Gestion de Citas
+                <i class="bi bi-speedometer2"></i> Calendario de Citas
             </a>
 
             <div class="section-title">Gestión</div>
@@ -84,7 +84,7 @@
             </a>
 
             <a class="nav-link {{ request()->routeIs('medicamentos.*') ? 'active' : '' }}" href="{{ route('medicamentos.index') }}">
-                <i class="bi bi-capsule-pill"></i> Gestionar Medicamentos
+                <i class="bi bi-capsule-pill"></i> Gestión de Medicamentos
             </a>
 
             <a class="nav-link {{ request()->routeIs('cie10.*') ? 'active' : '' }}" href="{{ route('cie10.index') }}">
@@ -95,9 +95,9 @@
 
     <div class="main-content">
         <nav class="topbar">
-            <span class="text-gray-600">Sistema de Gestión Médica v1.0</span>
+            <span class="text-gray-600">Sistema de Gestión Médica</span>
             <div class="ms-auto d-flex align-items-center">
-                <span class="me-3 small fw-medium text-muted">{{ now()->translatedFormat('l, d F Y') }}</span>
+                    <span class="me-3 small fw-medium text-muted text-capitalize">{{ now()->locale('es')->translatedFormat('l, d F Y') }}</span>
                 <div class="vr me-3"></div>
                 <i class="bi bi-person-circle fs-4 text-primary"></i>
             </div>

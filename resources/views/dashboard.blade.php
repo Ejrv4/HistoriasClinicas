@@ -5,7 +5,7 @@
     {{-- Encabezado --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-black text-uppercase m-0" style="letter-spacing: -1px; color: #1e293b;">Gestión de citas</h2>
+            <h2 class="fw-black text-uppercase m-0" style="letter-spacing: -1px; color: #1e293b;">Calendario de citas</h2>
             <p class="text-muted small fw-medium">{{ \Carbon\Carbon::parse($fechaSeleccionada)->format('d/m/Y') }}</p>
         </div>
         <div class="d-flex gap-2">

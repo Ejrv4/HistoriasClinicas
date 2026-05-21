@@ -73,7 +73,7 @@
             </div>
             
             <div class="col-md-4">
-                <label class="form-label fw-medium">Distrito</label>
+                <label class="form-label fw-medium">Distrito de Residencia</label>
                 {{-- CAMBIO: Input conectado al datalist --}}
                 <input type="text" name="distrito" id="input-distrito" list="distritos-lima" class="form-control" value="{{ old('distrito') }}" placeholder="Escriba para buscar..." required autocomplete="off">
                 
