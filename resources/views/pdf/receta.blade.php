@@ -94,9 +94,6 @@ body {
                     <td><span class="label">DNI:</span> {{ $dni }}</td>
                     <td align="right"><span class="label">Fecha:</span> {{ $fecha }}</td>
                 </tr>
-                <tr>
-                    <td colspan="2"><span class="label">Diagnóstico:</span> {{ $diagnostico }}</td>
-                </tr>
             </table>
         </div>
 
