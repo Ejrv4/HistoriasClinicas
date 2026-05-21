@@ -128,7 +128,6 @@
                                 <div class="row g-2 mb-2 diagnostico-row" id="diag-row-0">
                                     <div class="col-md-8">
                                         <label class="fw-bold text-secondary small mb-2 text-uppercase">Diagnóstico de Atención</label>
-                                        {{-- CAMBIO: Añadido list="lista_descripciones_cies" para buscar por texto descriptivo libremente --}}
                                         <input type="text" name="diagnosticos[0][diagnostico]" class="form-control diag-input" list="lista_descripciones_cies" autocomplete="off">
                                     </div>
                                     <div class="col-md-3">
@@ -187,7 +186,11 @@
                             <div class="col-md-2">
                                 <label class="small fw-bold text-muted">VÍA</label>
                                 <select id="rec_via" class="form-select">
-                                    <option>Via Oral</option><option>Intramuscular</option><option>Sublingual</option><option>Tópico</option><option>Oftálmica</option>
+                                    <option value="Via Oral">Via Oral</option>
+                                    <option value="Intramuscular">Intramuscular</option>
+                                    <option value="Sublingual">Sublingual</option>
+                                    <option value="Tópico">Tópico</option>
+                                    <option value="Oftálmica">Oftálmica</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
@@ -281,17 +284,14 @@
                         </div>
                     </div>
                 </div>
-            @empty
-                <div class="alert alert-light border text-center py-5 text-muted small">No hay atenciones registradas para este paciente.</div>
-            @endforelse
+            @endforeach
         </div>
     </div>
 </div>
 
-{{-- DATALISTS MANTENIENDO VALORES ÚNICOS PARA EVITAR ERRORES DE CLIC DE DUPLICADOS --}}
+{{-- DATALISTS MANTENIENDO VALORES ÚNICOS --}}
 <datalist id="lista_cies">
     @foreach($cie10Lista as $cie)
-        {{-- Usamos la combinación 'Código - Descripción' en el value para diferenciar duplicados en el DOM --}}
         <option value="{{ $cie->codigo }} — {{ $cie->descripcion }}"></option>
     @endforeach
 </datalist>
@@ -333,7 +333,6 @@
         document.getElementById(`diag-row-${id}`).remove();
     }
 
-    // --- INTERRUPTOR DE BÚSQUEDA INTELIGENTE SIN BLOQUEO DE DUPLICADOS ---
     document.getElementById('diagnosticos-container').addEventListener('input', function(e) {
         const row = e.target.closest('.diagnostico-row');
         if (!row) return;
@@ -342,46 +341,30 @@
         const inputCie = row.querySelector('.cie-input');
         const val = e.target.value;
 
-        // Caso A: El usuario interactúa o selecciona desde el input de CIE-10
         if (e.target.classList.contains('cie-input')) {
             if (val.includes(' — ')) {
                 const partes = val.split(' — ');
-                const codigoLimpio = partes[0].trim();
-                const descripcionLimpia = partes[1].trim();
-
-                // Separamos los valores permitiendo modificaciones posteriores individuales
-                inputCie.value = codigoLimpio;
-                inputDiag.value = descripcionLimpia;
+                inputCie.value = partes[0].trim();
+                inputDiag.value = partes[1].trim();
             } else {
-                // Búsqueda manual letra por letra (insensible a mayúsculas/minusculas)
                 const coincidencia = baseCie.find(c => c.codigo.trim().toUpperCase() === val.trim().toUpperCase());
-                if (coincidencia) {
-                    inputDiag.value = coincidencia.descripcion;
-                }
+                if (coincidencia) inputDiag.value = coincidencia.descripcion;
             }
         }
 
-        // Caso B: El usuario interactúa o selecciona desde el input de Diagnóstico de Atención
         if (e.target.classList.contains('diag-input')) {
             if (val.includes(' — ')) {
                 const partes = val.split(' — ');
-                const descripcionLimpia = partes[0].trim();
-                const codigoLimpio = partes[1].trim();
-
-                // Separamos los valores permitiendo modificaciones posteriores individuales
-                inputDiag.value = descripcionLimpia;
-                inputCie.value = codigoLimpio;
+                inputDiag.value = partes[0].trim();
+                inputCie.value = partes[1].trim();
             } else {
-                // Búsqueda manual por descripción exacta letra por letra (insensible a mayúsculas/minusculas)
                 const coincidencia = baseCie.find(c => c.descripcion.trim().toUpperCase() === val.trim().toUpperCase());
-                if (coincidencia) {
-                    inputCie.value = coincidencia.codigo;
-                }
+                if (coincidencia) inputCie.value = coincidencia.codigo;
             }
         }
     });
 
-    // --- 2. LÓGICA DE MEDICAMENTOS (FILTRADO CASCADA) ---
+    // --- 2. LÓGICA DE MEDICAMENTOS (FILTRADO CASCADA COMPLETO) ---
     const baseMedicamentos = @json($medicamentosLista);
     const inputMed = document.getElementById('rec_med');
     const inputConc = document.getElementById('rec_conc');
@@ -389,11 +372,13 @@
     const datalistConc = document.getElementById('lista_conc_med');
     const datalistPres = document.getElementById('lista_pres_med');
 
+    // Cambios en cascada: Nombre -> Concentraciones
     inputMed.addEventListener('input', function() {
         const val = this.value.trim().toLowerCase();
         const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase() === val);
-        datalistConc.innerHTML = '';
+        datalistConc.innerHTML = ''; datalistPres.innerHTML = '';
         inputConc.value = ''; inputPres.value = '';
+        
         if (filtrados.length > 0) {
             const concentracionesUnicas = [...new Set(filtrados.map(m => m.concentracion))];
             concentracionesUnicas.forEach(c => datalistConc.innerHTML += `<option value="${c}">`);
@@ -404,19 +389,82 @@
         }
     });
 
+    // Cambios en cascada: Concentración -> Presentaciones
     inputConc.addEventListener('input', function() {
         const medVal = inputMed.value.trim().toLowerCase();
         const concVal = this.value.trim().toLowerCase();
         const filtrados = baseMedicamentos.filter(m => 
             m.nombre.toLowerCase() === medVal && m.concentracion.toLowerCase() === concVal
         );
-        datalistPres.innerHTML = '';
+        datalistPres.innerHTML = ''; inputPres.value = '';
+        
         if (filtrados.length > 0) {
             const presentacionesUnicas = [...new Set(filtrados.map(m => m.presentacion))];
             presentacionesUnicas.forEach(p => datalistPres.innerHTML += `<option value="${p}">`);
-            if(presentacionesUnicas.length === 1) inputPres.value = presentacionesUnicas[0];
+            if(presentacionesUnicas.length === 1) {
+                inputPres.value = presentacionesUnicas[0];
+                inputPres.dispatchEvent(new Event('input'));
+            }
         }
     });
+
+    // INTERCEPTOR MEJORADO: Captura la presentación y desestructura Frecuencia y Duración
+    inputPres.addEventListener('input', function() {
+        const medVal = inputMed.value.trim().toLowerCase();
+        const concVal = inputConc.value.trim().toLowerCase();
+        const presVal = this.value.trim().toLowerCase();
+
+        const medExacto = baseMedicamentos.find(m => 
+            m.nombre.toLowerCase() === medVal && 
+            m.concentracion.toLowerCase() === concVal &&
+            m.presentacion.toLowerCase() === presVal
+        );
+
+        if (medExacto) {
+            if (medExacto.dosis) document.getElementById('rec_dos').value = medExacto.dosis;
+            if (medExacto.via_administracion) document.getElementById('rec_via').value = medExacto.via_administracion;
+            
+            // Separar y comparar FRECUENCIA ("8 Horas" -> Numero: 8, Selector: Horas)
+            if (medExacto.frecuencia) {
+                const datosFrecuencia = separarNumeroYTexto(medExacto.frecuencia);
+                if (datosFrecuencia) {
+                    document.getElementById('f_n').value = datosFrecuencia.numero;
+                    // Capitalizamos la primera letra para que encaje con el value del select ("Horas" / "Días")
+                    const tiempoFormateado = datosFrecuencia.texto.charAt(0).toUpperCase() + datosFrecuencia.texto.slice(1);
+                    document.getElementById('f_t').value = tiempoFormateado;
+                }
+            }
+            
+            // Separar y comparar DURACIÓN ("7 Días" -> Numero: 7, Selector: Días)
+            if (medExacto.duracion) {
+                const datosDuracion = separarNumeroYTexto(medExacto.duracion);
+                if (datosDuracion) {
+                    document.getElementById('d_n').value = datosDuracion.numero;
+                    // Capitalizamos la primera letra ("Días" / "Semanas" / "Meses")
+                    const tiempoFormateado = datosDuracion.texto.charAt(0).toUpperCase() + datosDuracion.texto.slice(1);
+                    document.getElementById('d_t').value = tiempoFormateado;
+                }
+            }
+
+            if (medExacto.cantidad_total) {
+                document.getElementById('rec_total').value = medExacto.cantidad_total;
+            } else {
+                if (typeof calcularCantidadTotal === "function") calcularCantidadTotal();
+            }
+        }
+    });
+
+    function separarNumeroYTexto(stringOriginal) {
+        if (!stringOriginal) return null;
+        const matches = stringOriginal.trim().match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
+        if (matches && matches.length === 3) {
+            return {
+                numero: matches[1],
+                texto: matches[2].toLowerCase()
+            };
+        }
+        return null;
+    }
 
     // --- 3. CÁLCULO DE DOSIS ---
     function calcularCantidadTotal() {
