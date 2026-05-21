@@ -41,4 +41,5 @@ Route::get('/cie10', [Cie10Controller::class, 'index'])->name('cie10.index');
 Route::post('/cie10', [Cie10Controller::class, 'store'])->name('cie10.store');
 Route::put('/cie10/{id}/inline', [Cie10Controller::class, 'updateInline'])->name('cie10.updateInline');
 Route::delete('/cie10/{id}', [Cie10Controller::class, 'destroy'])->name('cie10.destroy');
+Route::post('/cie10/importar', [App\Http\Controllers\Cie10Controller::class, 'importar'])->name('cie10.importar');
 

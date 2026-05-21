@@ -8,10 +8,31 @@
         <h2 class="fw-bold text-dark mb-0">Catálogo CIE-10</h2>
         <p class="text-muted small">Clasificación Internacional de Enfermedades</p>
     </div>
-    <button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCie10">
-        <i class="bi bi-plus-circle me-2"></i> Nuevo Diagnóstico
-    </button>
+    <div class="d-flex gap-2">
+        {{-- NUEVO BOTÓN: Importar desde Excel --}}
+        <button type="button" class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#modalImportarExcel">
+            <i class="bi bi-file-earmark-excel me-2"></i> Importar Excel
+        </button>
+        <button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCie10">
+            <i class="bi bi-plus-circle me-2"></i> Nuevo Diagnóstico
+        </button>
+    </div>
 </div>
+
+{{-- ALERTAS DE ÉXITO O ERROR --}}
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
 
 <div class="row">
     <div class="col-12">
@@ -55,6 +76,7 @@
     </div>
 </div>
 
+{{-- MODAL ORIGINAL: NUEVO DIAGNÓSTICO --}}
 <div class="modal fade" id="modalCie10" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -83,6 +105,35 @@
     </div>
 </div>
 
+{{-- NUEVO MODAL: IMPORTAR EXCEL --}}
+<div class="modal fade" id="modalImportarExcel" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-excel me-2"></i>Importar desde Excel</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('cie10.importar') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="alert alert-info border-0 small mb-3">
+                        <i class="bi bi-info-circle-fill me-2"></i> La primera fila debe ser la cabecera con las columnas exactas: <strong class="text-uppercase">codigo</strong> y <strong class="text-uppercase">diagnostico</strong>.
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Seleccione Archivo (.xlsx, .xls)</label>
+                        {{-- Restringimos nativamente solo a formatos Excel --}}
+                        <input type="file" name="archivo_excel" class="form-control" accept=".xlsx, .xls" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 p-4">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success px-4 fw-bold">PROCESAR E IMPORTAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -96,7 +147,6 @@ $(document).ready(function() {
         "dom": '<"d-flex justify-content-between mb-3"f>rtip'
     });
 
-    // Toggle para edición en línea (Similar a medicamentos)
     $('.btn-edit-toggle').on('click', function() {
         const row = $(this).closest('tr');
         row.find('.text-view, .text-edit, .btn-save-inline, .btn-edit-toggle').toggleClass('d-none');
