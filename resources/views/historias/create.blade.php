@@ -108,7 +108,7 @@
                                             <span>{{ $ant->descripcion }}</span>
                                         </li>
                                     @empty
-                                        <li class="list-group-item bg-transparent text-muted italic">Sin registros previos.</li>
+                                        <li class="list-group-item bg-transparent text-muted fst-italic">Sin registros previos.</li>
                                     @endforelse
                                 </ul>
                             </div>
@@ -173,6 +173,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="small fw-bold text-muted">PRESENTACIÓN</label>
+                                {{-- MANTENIDO: Input nativo original --}}
                                 <input type="text" id="rec_pres" class="form-control" list="lista_pres_med" autocomplete="off">
                                 <datalist id="lista_pres_med"></datalist>
                             </div>
@@ -199,9 +200,11 @@
                                 <label class="small fw-bold text-muted">FRECUENCIA</label>
                                 <div class="input-group">
                                     <input type="number" id="f_n" class="form-control calc-trigger" placeholder="Cada...">
+                                    {{-- MODIFICACIÓN: Se añade la opción Dosis Única --}}
                                     <select id="f_t" class="form-select calc-trigger">
                                         <option value="Horas">Horas</option>
                                         <option value="Días">Días</option>
+                                        <option value="Dosis Única">Dosis Única</option>
                                     </select>
                                 </div>
                             </div>
@@ -286,7 +289,9 @@
                         </div>
                     </div>
                 </div>
-            @endforeach
+            @empty
+                <div class="text-muted p-3 border rounded bg-light text-center small">El paciente no registra consultas previas en el sistema.</div>
+            @endforelse
         </div>
     </div>
 </div>
@@ -366,7 +371,7 @@
         }
     });
 
-    // --- 2. LÓGICA DE MEDICAMENTOS (FILTRADO CASCADA COMPLETO) ---
+    // --- 2. LÓGICA DE MEDICAMENTOS (FILTRADO CASCADA ORIGINAL) ---
     const baseMedicamentos = @json($medicamentosLista);
     const inputMed = document.getElementById('rec_med');
     const inputConc = document.getElementById('rec_conc');
@@ -410,7 +415,7 @@
         }
     });
 
-    // INTERCEPTOR MEJORADO: Captura la presentación y desestructura Frecuencia y Duración
+    // Captura la presentación y desestructura Frecuencia y Duración
     inputPres.addEventListener('input', function() {
         const medVal = inputMed.value.trim().toLowerCase();
         const concVal = inputConc.value.trim().toLowerCase();
@@ -426,33 +431,38 @@
             if (medExacto.dosis) document.getElementById('rec_dos').value = medExacto.dosis;
             if (medExacto.via_administracion) document.getElementById('rec_via').value = medExacto.via_administracion;
             
-            // Separar y comparar FRECUENCIA ("8 Horas" -> Numero: 8, Selector: Horas)
+            // Separar y comparar FRECUENCIA
             if (medExacto.frecuencia) {
-                const datosFrecuencia = separarNumeroYTexto(medExacto.frecuencia);
-                if (datosFrecuencia) {
-                    document.getElementById('f_n').value = datosFrecuencia.numero;
-                    // Capitalizamos la primera letra para que encaje con el value del select ("Horas" / "Días")
-                    const tiempoFormateado = datosFrecuencia.texto.charAt(0).toUpperCase() + datosFrecuencia.texto.slice(1);
-                    document.getElementById('f_t').value = tiempoFormateado;
+                if (medExacto.frecuencia === 'Dosis Única') {
+                    document.getElementById('f_t').value = 'Dosis Única';
+                } else {
+                    const datosFrecuencia = separarNumeroYTexto(medExacto.frecuencia);
+                    if (datosFrecuencia) {
+                        document.getElementById('f_n').value = datosFrecuencia.numero;
+                        const tiempoFormateado = datosFrecuencia.texto.charAt(0).toUpperCase() + datosFrecuencia.texto.slice(1);
+                        document.getElementById('f_t').value = tiempoFormateado;
+                    }
                 }
             }
             
-            // Separar y comparar DURACIÓN ("7 Días" -> Numero: 7, Selector: Días)
+            // Separar y comparar DURACIÓN
             if (medExacto.duracion) {
                 const datosDuracion = separarNumeroYTexto(medExacto.duracion);
                 if (datosDuracion) {
                     document.getElementById('d_n').value = datosDuracion.numero;
-                    // Capitalizamos la primera letra ("Días" / "Semanas" / "Meses")
                     const tiempoFormateado = datosDuracion.texto.charAt(0).toUpperCase() + datosDuracion.texto.slice(1);
                     document.getElementById('d_t').value = tiempoFormateado;
                 }
+            } else if (medExacto.frecuencia === 'Dosis Única') {
+                document.getElementById('d_n').value = '';
             }
 
             if (medExacto.cantidad_total) {
                 document.getElementById('rec_total').value = medExacto.cantidad_total;
-            } else {
-                if (typeof calcularCantidadTotal === "function") calcularCantidadTotal();
             }
+            
+            // Forzamos el recálculo y la activación de bloqueos tras la inyección de datos
+            calcularCantidadTotal();
         }
     });
 
@@ -468,21 +478,56 @@
         return null;
     }
 
-    // --- 3. CÁLCULO DE DOSIS ---
+    // --- 3. CÁLCULO DE DOSIS Y CONTROL DE INHABILITACIÓN POR DOSIS ÚNICA ---
     function calcularCantidadTotal() {
-        const dosis = parseFloat(document.getElementById('rec_dos').value) || 0;
-        const f_num = parseFloat(document.getElementById('f_n').value) || 0;
-        const f_tipo = document.getElementById('f_t').value;
-        const d_num = parseFloat(document.getElementById('d_n').value) || 0;
-        const d_tipo = document.getElementById('d_t').value;
-        if (dosis > 0 && f_num > 0 && d_num > 0) {
-            let tomasAlDia = (f_tipo === 'Horas') ? (24 / f_num) : (1 / f_num);
-            let diasTotales = d_num;
-            if (d_tipo === 'Semanas') diasTotales = d_num * 7;
-            if (d_tipo === 'Meses') diasTotales = d_num * 30;
-            document.getElementById('rec_total').value = Math.ceil(dosis * tomasAlDia * diasTotales);
+        const dosisInput = document.getElementById('rec_dos');
+        const f_numInput = document.getElementById('f_n');
+        const f_tipoSelect = document.getElementById('f_t');
+        const d_numInput = document.getElementById('d_n');
+        const d_tipoSelect = document.getElementById('d_t');
+        const totalInput = document.getElementById('rec_total');
+
+        const dosis = parseFloat(dosisInput.value) || 0;
+
+        // MODIFICACIÓN: Si es Dosis Única, bloqueamos y limpiamos Frecuencia (numérica) y Duración completa
+        if (f_tipoSelect.value === 'Dosis Única') {
+            f_numInput.value = "";
+            f_numInput.disabled = true;
+            f_numInput.placeholder = "N/A";
+            
+            d_numInput.value = "";
+            d_numInput.disabled = true;
+            d_numInput.placeholder = "N/A";
+            d_tipoSelect.disabled = true;
+
+            if (dosis > 0) {
+                totalInput.value = Math.ceil(dosis);
+            } else {
+                totalInput.value = 0;
+            }
+        } else {
+            // Desbloqueo clásico si cambian a Horas o Días
+            f_numInput.disabled = false;
+            f_numInput.placeholder = "Cada...";
+            d_numInput.disabled = false;
+            d_numInput.placeholder = "Por...";
+            d_tipoSelect.disabled = false;
+
+            const f_num = parseFloat(f_numInput.value) || 0;
+            const f_tipo = f_tipoSelect.value;
+            const d_num = parseFloat(d_numInput.value) || 0;
+            const d_tipo = d_tipoSelect.value;
+
+            if (dosis > 0 && f_num > 0 && d_num > 0) {
+                let tomasAlDia = (f_tipo === 'Horas') ? (24 / f_num) : (1 / f_num);
+                let diasTotales = d_num;
+                if (d_tipo === 'Semanas') diasTotales = d_num * 7;
+                if (d_tipo === 'Meses') diasTotales = d_num * 30;
+                totalInput.value = Math.ceil(dosis * tomasAlDia * diasTotales);
+            }
         }
     }
+
     document.querySelectorAll('.calc-trigger').forEach(el => {
         el.addEventListener('input', calcularCantidadTotal);
         el.addEventListener('change', calcularCantidadTotal); 
@@ -496,11 +541,16 @@
         const pres = document.getElementById('rec_pres').value;
         const dos = document.getElementById('rec_dos').value;
         const via = document.getElementById('rec_via').value;
-        const freq = document.getElementById('f_n').value + ' ' + document.getElementById('f_t').value;
-        const dur = document.getElementById('d_n').value + ' ' + document.getElementById('d_t').value;
+        const f_tipo = document.getElementById('f_t').value;
+        
+        // MODIFICACIÓN: Si es Dosis Única armamos los strings planos correspondientes para la receta
+        let freq = f_tipo === 'Dosis Única' ? 'Dosis Única' : document.getElementById('f_n').value + ' ' + f_tipo;
+        let dur = f_tipo === 'Dosis Única' ? 'N/A' : document.getElementById('d_n').value + ' ' + document.getElementById('d_t').value;
         const total = document.getElementById('rec_total').value;
 
-        if(!med || !dos || total <= 0) return alert("Datos incompletos.");
+        if(!med || !dos || !via || !pres || total <= 0) {
+            return alert("Datos incompletos o Cantidad Total inválida.");
+        }
 
         const fila = `<tr id="fila_${recIdx}" class="align-middle text-center">
             <td class="text-start"><strong>${med}</strong><br><span class="badge bg-secondary">${conc}</span></td>
@@ -511,6 +561,7 @@
             <td><button type="button" onclick="removeMed(${recIdx})" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-x-lg"></i></button></td></tr>`;
         
         document.getElementById('listaRecetaVisual').insertAdjacentHTML('beforeend', fila);
+        
         const hiddens = `<div id="hidden_${recIdx}">
             <input type="hidden" name="recetas[${recIdx}][medicamento]" value="${med}">
             <input type="hidden" name="recetas[${recIdx}][concentracion]" value="${conc}">
@@ -520,10 +571,16 @@
             <input type="hidden" name="recetas[${recIdx}][frecuencia]" value="${freq}">
             <input type="hidden" name="recetas[${recIdx}][duracion]" value="${dur}">
             <input type="hidden" name="recetas[${recIdx}][cantidad_total]" value="${total}"></div>`;
+            
         document.getElementById('inputs-receta-ocultos').insertAdjacentHTML('beforeend', hiddens);
         recIdx++;
+        
+        // Limpieza y restauración clásica
         ['rec_med','rec_conc','rec_pres','rec_dos','f_n','d_n'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('rec_total').value = '0';
+        
+        // Ejecutamos cálculo para remover bloqueos tras añadir el ítem
+        calcularCantidadTotal();
     }
 
     function removeMed(id) {

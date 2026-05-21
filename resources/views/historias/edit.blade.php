@@ -54,7 +54,6 @@
         @csrf
         @method('PUT')
         <input type="hidden" name="cita_id" value="{{ $cita->id }}">
-        {{-- CAMBIO: Añadido id explícito para asegurar lectura inequívoca del script --}}
         <input type="hidden" name="paciente_id" id="paciente_id_global" value="{{ $paciente->id }}">
 
         <div class="tab-content" id="hcTabsContent">
@@ -109,7 +108,7 @@
                                             <span>{{ $ant->descripcion }}</span>
                                         </li>
                                     @empty
-                                        <li class="list-group-item bg-transparent text-muted">Sin registros.</li>
+                                        <li class="list-group-item bg-transparent text-muted fst-italic">Sin registros.</li>
                                     @endforelse
                                 </ul>
                             </div>
@@ -119,19 +118,17 @@
                     <div class="col-md-9">
                         <div class="card border-0 shadow-sm p-4">
                             <label class="fw-bold text-secondary small mb-2 text-uppercase">Anamnesis</label>
-                            <textarea name="anamnesis" class="form-control mb-3" rows="4">{{ $historia->anamnesis }}</textarea>
+                            <textarea name="anamnesis" class="form-control mb-3" rows="4"></textarea>
                             
                             <label class="fw-bold text-secondary small mb-2 text-uppercase">Examen Físico</label>
-                            <textarea name="examen_fisico" class="form-control mb-3" rows="4">{{ $historia->examen_fisico }}</textarea>
+                            <textarea name="examen_fisico" class="form-control mb-3" rows="4"></textarea>
                             
                             <div id="diagnosticos-container">
                                 <label class="fw-bold text-secondary small mb-2 text-uppercase d-block">Diagnósticos de la Atención</label>
                                 
-                                {{-- CARGAR DIAGNÓSTICOS EXISTENTES CON LOS SELECCIONES INTELIGENTES --}}
                                 @forelse($historia->diagnosticos as $index => $diag)
                                     <div class="row g-2 mb-2 diagnostico-row" id="diag-row-{{ $index }}">
                                         <div class="col-md-8">
-                                            {{-- CAMBIO: Añadido list="lista_descripciones_cies" para filtrado descriptivo cruzado --}}
                                             <input type="text" name="diagnosticos[{{ $index }}][diagnostico]" class="form-control diag-input" value="{{ $diag->diagnostico }}" list="lista_descripciones_cies" autocomplete="off" placeholder="Descripción del diagnóstico">
                                         </div>
                                         <div class="col-md-3">
@@ -200,7 +197,13 @@
                             <div class="col-md-2">
                                 <label class="small fw-bold text-muted">VÍA</label>
                                 <select id="rec_via" class="form-select">
-                                    <option>Via Oral</option><option>Intramuscular</option><option>Sublingual</option><option>Tópico</option><option>Oftálmica</option>
+                                    <option value="VÍA ORAL">VÍA ORAL</option>
+                                    <option value="VÍA ENDOVENOSA">VÍA ENDOVENOSA</option>
+                                    <option value="VÍA INTRAMUSCULAR">VÍA INTRAMUSCULAR</option>
+                                    <option value="VÍA TÓPICA">VÍA TÓPICA</option>
+                                    <option value="VÍA ANAL">VÍA ANAL</option>
+                                    <option value="VÍA SUBCUTÁNEA">VÍA SUBCUTÁNEA</option>
+                                    <option value="VÍA RECTAL">VÍA RECTAL</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
@@ -208,7 +211,9 @@
                                 <div class="input-group">
                                     <input type="number" id="f_n" class="form-control calc-trigger" placeholder="Cada...">
                                     <select id="f_t" class="form-select calc-trigger">
-                                        <option value="Horas">Horas</option><option value="Días">Días</option>
+                                        <option value="Horas">Horas</option>
+                                        <option value="Días">Días</option>
+                                        <option value="Dosis Única">Dosis Única</option>
                                     </select>
                                 </div>
                             </div>
@@ -217,7 +222,9 @@
                                 <div class="input-group">
                                     <input type="number" id="d_n" class="form-control calc-trigger" placeholder="Por...">
                                     <select id="d_t" class="form-select calc-trigger">
-                                        <option value="Días">Días</option><option value="Semanas">Semanas</option><option value="Meses">Meses</option>
+                                        <option value="Días">Días</option>
+                                        <option value="Semanas">Semanas</option>
+                                        <option value="Meses">Meses</option>
                                     </select>
                                 </div>
                             </div>
@@ -368,7 +375,6 @@
         const inputCie = row.querySelector('.cie-input');
         const val = e.target.value;
 
-        // Buscar interactuando desde el input de código CIE-10
         if (e.target.classList.contains('cie-input')) {
             if (val.includes(' — ')) {
                 const partes = val.split(' — ');
@@ -380,7 +386,6 @@
             }
         }
 
-        // Buscar interactuando desde el input de descripción Diagnóstico de Atención
         if (e.target.classList.contains('diag-input')) {
             if (val.includes(' — ')) {
                 const partes = val.split(' — ');
@@ -395,33 +400,113 @@
 
     // --- GESTIÓN DE RECETAS (Filtrado y CRUD) ---
     const inputMed = document.getElementById('rec_med');
-    const inputConc = document.getElementById('rec_conc');
-    const inputPres = document.getElementById('rec_pres');
+    const inputConcentracion = document.getElementById('rec_conc');
+    const inputPresentacion = document.getElementById('rec_pres');
     const datalistConc = document.getElementById('lista_conc_med');
     const datalistPres = document.getElementById('lista_pres_med');
 
     inputMed.addEventListener('input', function() {
         const val = this.value.trim().toLowerCase();
-        const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase() === val);
-        datalistConc.innerHTML = ''; inputConc.value = ''; inputPres.value = '';
-        if (filtrados.length > 0) {
+        const datalistMed = document.getElementById('lista_nombres_med');
+        
+        const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase().includes(val));
+        
+        datalistMed.innerHTML = '';
+        const nombresUnicos = [...new Set(filtrados.map(m => m.nombre))];
+        nombresUnicos.forEach(nombre => {
+            datalistMed.innerHTML += `<option value="${nombre}">`;
+        });
+
+        datalistConc.innerHTML = ''; 
+        datalistPres.innerHTML = '';
+        inputConcentracion.value = ''; 
+        inputPresentacion.value = '';
+        
+        if (val.length > 0 && filtrados.length > 0) {
             const concs = [...new Set(filtrados.map(m => m.concentracion))];
-            concs.forEach(c => datalistConc.innerHTML += `<option value="${c}">`);
-            if(concs.length === 1) { inputConc.value = concs[0]; inputConc.dispatchEvent(new Event('input')); }
+            concs.forEach(c => {
+                if (c !== null && c !== undefined && c !== '') datalistConc.innerHTML += `<option value="${c}">`;
+            });
+            
+            const exacto = baseMedicamentos.filter(m => m.nombre.toLowerCase() === val);
+            if(exacto.length > 0 && concs.length === 1) { 
+                inputConcentracion.value = concs[0]; 
+                inputConcentracion.dispatchEvent(new Event('input')); 
+            }
         }
     });
 
-    inputConc.addEventListener('input', function() {
+    inputConcentracion.addEventListener('input', function() {
         const medVal = inputMed.value.trim().toLowerCase();
         const concVal = this.value.trim().toLowerCase();
         const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase() === medVal && m.concentracion.toLowerCase() === concVal);
-        datalistPres.innerHTML = '';
+        datalistPres.innerHTML = ''; inputPresentacion.value = '';
         if (filtrados.length > 0) {
             const press = [...new Set(filtrados.map(m => m.presentacion))];
             press.forEach(p => datalistPres.innerHTML += `<option value="${p}">`);
-            if(press.length === 1) inputPres.value = press[0];
+            if(press.length === 1) {
+                inputPresentacion.value = press[0];
+                inputPresentacion.dispatchEvent(new Event('input'));
+            }
         }
     });
+
+    inputPresentacion.addEventListener('input', function() {
+        const medVal = inputMed.value.trim().toLowerCase();
+        const concVal = inputConcentracion.value.trim().toLowerCase();
+        const presVal = this.value.trim().toLowerCase();
+
+        const medExacto = baseMedicamentos.find(m => 
+            m.nombre.toLowerCase() === medVal && 
+            m.concentracion.toLowerCase() === concVal &&
+            m.presentacion.toLowerCase() === presVal
+        );
+
+        if (medExacto) {
+            if (medExacto.dosis) document.getElementById('rec_dos').value = medExacto.dosis;
+            if (medExacto.via_administracion) document.getElementById('rec_via').value = medExacto.via_administracion;
+            
+            if (medExacto.frecuencia) {
+                if (medExacto.frecuencia === 'Dosis Única') {
+                    document.getElementById('f_t').value = 'Dosis Única';
+                } else {
+                    const datosFrecuencia = separarNumeroYTexto(medExacto.frecuencia);
+                    if (datosFrecuencia) {
+                        document.getElementById('f_n').value = datosFrecuencia.numero;
+                        document.getElementById('f_t').value = datosFrecuencia.text.charAt(0).toUpperCase() + datosFrecuencia.text.slice(1);
+                    }
+                }
+            }
+            
+            if (medExacto.duracion) {
+                const datosDuracion = separarNumeroYTexto(medExacto.duracion);
+                if (datosDuracion) {
+                    document.getElementById('d_n').value = datosDuracion.numero;
+                    document.getElementById('d_t').value = datosDuracion.text.charAt(0).toUpperCase() + datosDuracion.text.slice(1);
+                }
+            } else if (medExacto.frecuencia === 'Dosis Única') {
+                document.getElementById('d_n').value = '';
+            }
+
+            if (medExacto.cantidad_total) {
+                document.getElementById('rec_total').value = medExacto.cantidad_total;
+            }
+            
+            calcularCantidadTotal();
+        }
+    });
+
+    function separarNumeroYTexto(stringOriginal) {
+        if (!stringOriginal) return null;
+        const matches = stringOriginal.trim().match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
+        if (matches && matches.length === 3) {
+            return {
+                numero: matches[1],
+                text: matches[2].toLowerCase()
+            };
+        }
+        return null;
+    }
 
     function injectReceta(med, conc, pres, dos, via, freq, dur, total) {
         const fila = `<tr id="fila_${recIdx}" class="align-middle text-center">
@@ -444,20 +529,25 @@
     }
 
     function addMedicamento() {
-        const data = {
-            med: document.getElementById('rec_med').value,
-            conc: document.getElementById('rec_conc').value,
-            pres: document.getElementById('rec_pres').value,
-            dos: document.getElementById('rec_dos').value,
-            via: document.getElementById('rec_via').value,
-            freq: document.getElementById('f_n').value + ' ' + document.getElementById('f_t').value,
-            dur: document.getElementById('d_n').value + ' ' + document.getElementById('d_t').value,
-            total: document.getElementById('rec_total').value
-        };
-        if(!data.med || !data.dos || data.total <= 0) return alert("Complete los datos.");
-        injectReceta(data.med, data.conc, data.pres, data.dos, data.via, data.freq, data.dur, data.total);
+        const med = document.getElementById('rec_med').value;
+        const conc = document.getElementById('rec_conc').value;
+        const pres = document.getElementById('rec_pres').value;
+        const dos = document.getElementById('rec_dos').value;
+        const via = document.getElementById('rec_via').value;
+        const f_tipo = document.getElementById('f_t').value;
+        
+        let freq = f_tipo === 'Dosis Única' ? 'Dosis Única' : document.getElementById('f_n').value + ' ' + f_tipo;
+        let dur = f_tipo === 'Dosis Única' ? 'N/A' : document.getElementById('d_n').value + ' ' + document.getElementById('d_t').value;
+        const total = document.getElementById('rec_total').value;
+
+        if(!med || !dos || !via || !pres || total <= 0) {
+            return alert("❌ Error: Faltan completar campos obligatorios del fármaco.");
+        }
+
+        injectReceta(med, conc, pres, dos, via, freq, dur, total);
         ['rec_med','rec_conc','rec_pres','rec_dos','f_n','d_n'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('rec_total').value = '0';
+        calcularCantidadTotal();
     }
 
     function removeMed(id) {
@@ -466,20 +556,56 @@
     }
 
     function calcularCantidadTotal() {
-        const dosis = parseFloat(document.getElementById('rec_dos').value) || 0;
-        const f_num = parseFloat(document.getElementById('f_n').value) || 0;
-        const f_tipo = document.getElementById('f_t').value;
-        const d_num = parseFloat(document.getElementById('d_n').value) || 0;
-        const d_tipo = document.getElementById('d_t').value;
-        if (dosis > 0 && f_num > 0 && d_num > 0) {
-            let tomasAlDia = (f_tipo === 'Horas') ? (24 / f_num) : (1 / f_num);
-            let diasTotales = d_num;
-            if (d_tipo === 'Semanas') diasTotales = d_num * 7;
-            if (d_tipo === 'Meses') diasTotales = d_num * 30;
-            document.getElementById('rec_total').value = Math.ceil(dosis * tomasAlDia * diasTotales);
+        const dosisInput = document.getElementById('rec_dos');
+        const f_numInput = document.getElementById('f_n');
+        const f_tipoSelect = document.getElementById('f_t');
+        const d_numInput = document.getElementById('d_n');
+        const d_tipoSelect = document.getElementById('d_t');
+        const totalInput = document.getElementById('rec_total');
+
+        const dosis = parseFloat(dosisInput.value) || 0;
+
+        if (f_tipoSelect.value === 'Dosis Única') {
+            f_numInput.value = "";
+            f_numInput.disabled = true;
+            f_numInput.placeholder = "N/A";
+            
+            d_numInput.value = "";
+            d_numInput.disabled = true;
+            d_numInput.placeholder = "N/A";
+            d_tipoSelect.disabled = true;
+
+            if (dosis > 0) {
+                totalInput.value = Math.ceil(dosis);
+            } else {
+                totalInput.value = 0;
+            }
+        } else {
+            f_numInput.disabled = false;
+            f_numInput.placeholder = "Cada...";
+            d_numInput.disabled = false;
+            d_numInput.placeholder = "Por...";
+            d_tipoSelect.disabled = false;
+
+            const f_num = parseFloat(f_numInput.value) || 0;
+            const f_tipo = f_tipoSelect.value;
+            const d_num = parseFloat(d_numInput.value) || 0;
+            const d_tipo = d_tipoSelect.value;
+
+            if (dosis > 0 && f_num > 0 && d_num > 0) {
+                let tomasAlDia = (f_tipo === 'Horas') ? (24 / f_num) : (1 / f_num);
+                let diasTotales = d_num;
+                if (d_tipo === 'Semanas') diasTotales = d_num * 7;
+                if (d_tipo === 'Meses') diasTotales = d_num * 30;
+                totalInput.value = Math.ceil(dosis * tomasAlDia * diasTotales);
+            }
         }
     }
-    document.querySelectorAll('.calc-trigger').forEach(el => { el.addEventListener('input', calcularCantidadTotal); el.addEventListener('change', calcularCantidadTotal); });
+    
+    document.querySelectorAll('.calc-trigger').forEach(el => { 
+        el.addEventListener('input', calcularCantidadTotal); 
+        el.addEventListener('change', calcularCantidadTotal); 
+    });
 
     // --- ANTECEDENTES MANUAL ---
     async function guardarAntecedentesManual(event) {
