@@ -121,4 +121,39 @@ class PacienteController extends Controller
 
         return view('paciente.datos', compact('paciente', 'antecedentes', 'historial'));
     }
+
+    public function destroy($id)
+    {
+        try {
+            $paciente = \App\Models\Paciente::findOrFail($id);
+
+            // 1. Conseguimos los IDs de las historias clínicas del paciente para no dejar diagnósticos huérfanos
+            $historiasIds = \App\Models\HistoriaClinica::where('paciente_id', $id)->pluck('id');
+            
+            // 2. Purgamos en cascada de forma manual y ordenada para evitar errores de llaves foráneas
+            \App\Models\DiagnosticoAtencion::whereIn('historia_clinica_id', $historiasIds)->delete();
+            \App\Models\HistoriaClinica::where('paciente_id', $id)->delete();
+            \App\Models\Antecedente::where('paciente_id', $id)->delete();
+            
+            // Buscamos las citas para borrar las recetas médicas vinculadas a ellas primero
+            $citasIds = \App\Models\Cita::where('paciente_id', $id)->pluck('id');
+            \Illuminate\Support\Facades\DB::table('recetas')->whereIn('cita_id', $citasIds)->delete();
+            \App\Models\Cita::where('paciente_id', $id)->delete();
+
+            // 3. Finalmente eliminamos al paciente
+            $paciente->delete();
+
+            // Respondemos en JSON para que el Javascript de la vista remueva la fila con animación
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Paciente y todo su historial clínico eliminados permanentemente.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No se pudo eliminar el registro: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

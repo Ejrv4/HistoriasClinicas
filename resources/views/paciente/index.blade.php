@@ -37,7 +37,7 @@
             </thead>
             <tbody>
                 @foreach($pacientes as $paciente)
-                <tr>
+                <tr id="row-paciente-{{ $paciente->id }}">
                     <td class="fw-bold">{{ $paciente->dni }}</td>
                     <td class="fw-semibold">{{ $paciente->apellido }}</td>
                     <td>{{ $paciente->nombre }}</td>
@@ -53,7 +53,6 @@
                     <td class="text-center">
                         {{ \Carbon\Carbon::parse($paciente->fecha_nacimiento)->age }} años
                     </td>
-                    {{-- DATO DE OCUPACIÓN --}}
                     <td>
                         <span class="text-dark small fw-medium">{{ $paciente->trabajo ?? 'N/A' }}</span>
                     </td>
@@ -79,9 +78,10 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <a class="dropdown-item py-2 text-danger" href="#">
+                                    {{-- CORRECCIÓN: Botón configurado con llamada AJAX interactiva segura --}}
+                                    <button type="button" class="dropdown-item py-2 text-danger" onclick="eliminarPacienteHistorial({{ $paciente->id }}, '{{ $paciente->apellido }}, {{ $paciente->nombre }}')">
                                         <i class="bi bi-trash-fill me-2"></i>Eliminar Registro
-                                    </a>
+                                    </button>
                                 </li>
                             </ul>
                         </div>
@@ -99,8 +99,10 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
+    let tablaGeneral;
+
     $(document).ready(function() {
-        $('#tabla-pacientes-general').DataTable({
+        tablaGeneral = $('#tabla-pacientes-general').DataTable({
             "order": [[ 1, "asc" ]],
             "language": {
                 "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
@@ -109,5 +111,42 @@
             "dom": '<"d-flex justify-content-between align-items-center mb-3"f>rtip'
         });
     });
+
+    // --- FUNCIÓN EN VANILLA JS PARA ELIMINAR SIN RECARGAR LA PÁGINA ---
+    async function eliminarPacienteHistorial(id, nombreCompleto) {
+        if (confirm(`⚠️ ¿Está completamente seguro de eliminar a "${nombreCompleto}"?\nEsta acción borrará permanentemente sus antecedentes, citas e historias clínicas registradas.`)) {
+            try {
+                // CORRECCIÓN: Apunta al endpoint nativo del resource de pacientes
+                const response = await fetch(`/pacientes/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    const fila = document.getElementById(`row-paciente-${id}`);
+                    if (fila) {
+                        fila.style.transition = "all 0.4s ease";
+                        fila.style.opacity = "0";
+                        fila.style.transform = "scale(0.95)";
+                        
+                        setTimeout(() => {
+                            tablaGeneral.row($(fila)).remove().draw(false);
+                            alert("✅ Registro eliminado correctamente.");
+                        }, 400);
+                    }
+                } else {
+                    alert("Error: " + (result.message || "No se pudo completar la eliminación."));
+                }
+            } catch (error) {
+                alert("Error crítico de conexión con el servidor.");
+            }
+        }
+    }
 </script>
 @endsection
