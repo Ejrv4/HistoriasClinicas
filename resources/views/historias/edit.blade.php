@@ -609,7 +609,7 @@
         el.addEventListener('change', calcularCantidadTotal); 
     });
 
-    // --- GUARDAR / ACTUALIZAR ANTECEDENTES MANUAL CON REFRESCO EN TIEMPO REAL ---
+// --- GUARDAR / ACTUALIZAR ANTECEDENTES MANUAL CON RESET DE ADVERTENCIA ---
     async function guardarAntecedentesManual(event) {
         const statusLabel = document.getElementById('save-status');
         const btn = event.currentTarget;
@@ -620,7 +620,6 @@
             return;
         }
 
-        // Capturamos los textos actuales de los campos de antecedentes
         const textoMedico = document.querySelector('textarea[name="Medico"]').value.trim();
         const textoQuirurgico = document.querySelector('textarea[name="Quirúrgico"]').value.trim();
         const textoAlergia = document.querySelector('textarea[name="Alergia"]').value.trim();
@@ -655,36 +654,33 @@
                 statusLabel.className = 'text-success fw-bold';
                 statusLabel.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardado correctamente';
 
+                // 1. Refrescar la lista lateral "Referencia Histórica" en vivo
                 const listaReferencia = document.getElementById('lista-referencia');
                 if (listaReferencia) {
-                    let nuevoHtmlHtml = '';
-
+                    let nuevoHtml = '';
                     if (textoMedico) {
-                        nuevoHtmlHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
+                        nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
                             <strong class="text-primary d-block small">MÉDICO</strong><span>${textoMedico}</span></li>`;
                     }
                     if (textoQuirurgico) {
-                        nuevoHtmlHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
+                        nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
                             <strong class="text-primary d-block small">QUIRÚRGICO</strong><span>${textoQuirurgico}</span></li>`;
                     }
                     if (textoAlergia) {
-                        nuevoHtmlHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
+                        nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
                             <strong class="text-danger d-block small">ALERGIA</strong><span>${textoAlergia}</span></li>`;
                     }
                     if (textoMedicacion) {
-                        nuevoHtmlHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
+                        nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
                             <strong class="text-success d-block small">MEDICACIÓN</strong><span>${textoMedicacion}</span></li>`;
                     }
-
-                    // Si todos quedaron vacíos, mostramos el mensaje por defecto
-                    if (!nuevoHtmlHtml) {
-                        nuevoHtmlHtml = '<li class="list-group-item bg-transparent text-muted fst-italic">Sin registros previos.</li>';
+                    if (!nuevoHtml) {
+                        nuevoHtml = '<li class="list-group-item bg-transparent text-muted fst-italic">Sin registros previos.</li>';
                     }
-
-                    // Sobrescribimos el contenedor de la otra pestaña inmediatamente
-                    listaReferencia.innerHTML = nuevoHtmlHtml;
+                    listaReferencia.innerHTML = nuevoHtml;
                 }
-                // =======================================================================
+
+                formChanged = false;
 
                 setTimeout(() => { statusLabel.innerHTML = ''; }, 3000);
             } else {
