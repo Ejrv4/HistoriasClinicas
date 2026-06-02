@@ -609,7 +609,7 @@
         el.addEventListener('change', calcularCantidadTotal); 
     });
 
-    // --- ANTECEDENTES MANUAL ---
+    // --- GUARDAR / ACTUALIZAR ANTECEDENTES MANUAL CON REFRESCO EN TIEMPO REAL ---
     async function guardarAntecedentesManual(event) {
         const statusLabel = document.getElementById('save-status');
         const btn = event.currentTarget;
@@ -620,16 +620,22 @@
             return;
         }
 
+        // Capturamos los textos actuales de los campos de antecedentes
+        const textoMedico = document.querySelector('textarea[name="Medico"]').value.trim();
+        const textoQuirurgico = document.querySelector('textarea[name="Quirúrgico"]').value.trim();
+        const textoAlergia = document.querySelector('textarea[name="Alergia"]').value.trim();
+        const textoMedicacion = document.querySelector('textarea[name="Medicación"]').value.trim();
+
         btn.disabled = true;
         statusLabel.className = 'text-muted';
         statusLabel.innerHTML = '<i class="bi bi-arrow-repeat spinner-border spinner-border-sm me-1"></i>Guardando...';
         
         const payload = {
             paciente_id: pacienteId,
-            Medico: document.querySelector('textarea[name="Medico"]').value,
-            Quirúrgico: document.querySelector('textarea[name="Quirúrgico"]').value,
-            Alergia: document.querySelector('textarea[name="Alergia"]').value,
-            Medicación: document.querySelector('textarea[name="Medicación"]').value
+            Medico: textoMedico,
+            Quirúrgico: textoQuirurgico,
+            Alergia: textoAlergia,
+            Medicación: textoMedicacion
         };
         
         try {
@@ -648,6 +654,38 @@
             if (response.ok && result.status === 'success') {
                 statusLabel.className = 'text-success fw-bold';
                 statusLabel.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardado correctamente';
+
+                const listaReferencia = document.getElementById('lista-referencia');
+                if (listaReferencia) {
+                    let nuevoHtmlHtml = '';
+
+                    if (textoMedico) {
+                        nuevoHtmlHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
+                            <strong class="text-primary d-block small">MÉDICO</strong><span>${textoMedico}</span></li>`;
+                    }
+                    if (textoQuirurgico) {
+                        nuevoHtmlHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
+                            <strong class="text-primary d-block small">QUIRÚRGICO</strong><span>${textoQuirurgico}</span></li>`;
+                    }
+                    if (textoAlergia) {
+                        nuevoHtmlHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
+                            <strong class="text-danger d-block small">ALERGIA</strong><span>${textoAlergia}</span></li>`;
+                    }
+                    if (textoMedicacion) {
+                        nuevoHtmlHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
+                            <strong class="text-success d-block small">MEDICACIÓN</strong><span>${textoMedicacion}</span></li>`;
+                    }
+
+                    // Si todos quedaron vacíos, mostramos el mensaje por defecto
+                    if (!nuevoHtmlHtml) {
+                        nuevoHtmlHtml = '<li class="list-group-item bg-transparent text-muted fst-italic">Sin registros previos.</li>';
+                    }
+
+                    // Sobrescribimos el contenedor de la otra pestaña inmediatamente
+                    listaReferencia.innerHTML = nuevoHtmlHtml;
+                }
+                // =======================================================================
+
                 setTimeout(() => { statusLabel.innerHTML = ''; }, 3000);
             } else {
                 throw new Error(result.message || 'Error desconocido');
