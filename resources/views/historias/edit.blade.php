@@ -117,11 +117,13 @@
 
                     <div class="col-md-9">
                         <div class="card border-0 shadow-sm p-4">
+                            {{-- CORRECCIÓN ANAMNESIS: El valor va en medio de las etiquetas --}}
                             <label class="fw-bold text-secondary small mb-2 text-uppercase">Anamnesis</label>
-                            <textarea name="anamnesis" class="form-control mb-3" rows="4"></textarea>
+                            <textarea name="anamnesis" class="form-control mb-3" rows="4" required>{{ old('anamnesis', $historia->anamnesis) }}</textarea>
                             
+                            {{-- CORRECCIÓN EXAMEN FÍSICO: El valor va en medio de las etiquetas --}}
                             <label class="fw-bold text-secondary small mb-2 text-uppercase">Examen Físico</label>
-                            <textarea name="examen_fisico" class="form-control mb-3" rows="4"></textarea>
+                            <textarea name="examen_fisico" class="form-control mb-3" rows="4">{{ old('examen_fisico', $historia->examen_fisico) }}</textarea>
                             
                             <div id="diagnosticos-container">
                                 <label class="fw-bold text-secondary small mb-2 text-uppercase d-block">Diagnósticos de la Atención</label>
@@ -162,7 +164,7 @@
                             </div>
 
                             <label class="fw-bold text-secondary small mb-2 text-uppercase">Plan / Tratamiento</label>
-                            <textarea name="plan" class="form-control mb-4" rows="4">{{ $historia->plan }}</textarea>
+                            <textarea name="plan" class="form-control mb-4" rows="4">{{ old('plan', $historia->plan) }}</textarea>
                         </div>
                     </div>
                 </div>
