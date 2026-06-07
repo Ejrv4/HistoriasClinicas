@@ -17,20 +17,29 @@
                         <i class="bi bi-person-vcard me-2"></i>
                         {{ $cita->paciente->apellido }}, {{ $cita->paciente->nombre }} 
                         <span class="text-dark">
-                            ({{ \Carbon\Carbon::parse($cita->paciente->fecha_nacimiento)->age }} años{{ $cita->paciente->trabajo ? ', ' . $cita->paciente->trabajo : '' }})
+                            {{-- PROTECCIÓN: Solo calcula la edad si la fecha de nacimiento existe --}}
+                            @if($cita->paciente->fecha_nacimiento)
+                                ({{ \Carbon\Carbon::parse($cita->paciente->fecha_nacimiento)->age }} años{{ $cita->paciente->trabajo ? ', ' . $cita->paciente->trabajo : '' }})
+                            @else
+                                (Edad no registrada{{ $cita->paciente->trabajo ? ', ' . $cita->paciente->trabajo : '' }})
+                            @endif
                         </span> 
-                        <span class="badge bg-info-subtle text-info border border-info-subtle ms-2" style="font-size: 0.8rem;">
-                            {{ $cita->paciente->genero }}
-                        </span>
+                        {{-- PROTECCIÓN: Solo muestra la medalla de género si este fue seleccionado --}}
+                        @if($cita->paciente->genero)
+                            <span class="badge bg-info-subtle text-info border border-info-subtle ms-2" style="font-size: 0.8rem;">
+                                {{ $cita->paciente->genero }}
+                            </span>
+                        @endif
                     </h4>
                     <span class="badge bg-dark">HC N° {{ str_pad($cita->paciente->id, 6, '0', STR_PAD_LEFT) }}</span>
                     <span class="badge bg-primary ms-1">CITA N° {{ str_pad($cita->id, 6, '0', STR_PAD_LEFT) }}</span>
-                    <span class="text-muted ms-3 small">DNI: {{ $cita->paciente->dni }}</span>
+                    {{-- PROTECCIÓN: Muestra "N/R" (No registrado) si no tiene DNI --}}
+                    <span class="text-muted ms-3 small">DNI: {{ $cita->paciente->dni ?? 'N/R' }}</span>
                 </div>
                 <div class="col-md-4 text-md-end">
                     <div class="d-inline-block text-start">
                         <small class="text-muted d-block small-caps">País</small>
-                        <span class="fw-bold">{{ $cita->paciente->pais_nacimiento }}</span>
+                        <span class="fw-bold">{{ $cita->paciente->pais_nacimiento ?? 'No registrado' }}</span>
                     </div>
                 </div>
             </div>

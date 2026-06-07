@@ -26,23 +26,24 @@ class PacienteController extends Controller
     // Guardar el nuevo paciente en la BD
     public function store(Request $request)
     {
+        // MODIFICACIÓN: Ajustado para que solo nombre y apellido sean obligatorios
         $validated = $request->validate([
-            'dni' => 'required|unique:pacientes,dni',
-            'nombre' => 'required|string|max:255',
-            'apellido' => 'required|string|max:255',
-            'trabajo' => 'nullable|string|max:255',
-            'fecha_nacimiento' => 'required|date',
-            'genero' => 'required',
-            'celular_personal' => 'required',
-            'correo' => 'nullable|email',
-            'distrito' => 'required',
-            'direccion' => 'nullable',
-            'pais_nacimiento' => 'required'
+            'nombre'           => 'required|string|max:255',
+            'apellido'         => 'required|string|max:255',
+            'dni'              => 'nullable|unique:pacientes,dni',
+            'trabajo'          => 'nullable|string|max:255',
+            'fecha_nacimiento' => 'nullable|date',
+            'genero'           => 'nullable|string',
+            'celular_personal' => 'nullable|string',
+            'correo'           => 'nullable|email',
+            'distrito'         => 'nullable|string',
+            'direccion'        => 'nullable|string',
+            'pais_nacimiento'  => 'nullable|string'
         ],[
-            'dni.required' => 'El campo DNI es obligatorio.',
-            'dni.unique' => 'Este DNI ya se encuentra registrado en el sistema.',
+            'dni.unique'      => 'Este DNI ya se encuentra registrado en el sistema.',
             'nombre.required' => 'El nombre es obligatorio.',
-            'correo.email' => 'Debes ingresar un formato de correo válido.',
+            'apellido.required' => 'El apellido es obligatorio.',
+            'correo.email'    => 'Debes ingresar un formato de correo válido.',
         ]);
 
         $paciente = Paciente::create($validated);
@@ -91,17 +92,24 @@ class PacienteController extends Controller
     {
         $paciente = Paciente::findOrFail($id);
 
+        // MODIFICACIÓN: Ajustado también en el update para mantener la concordancia de campos opcionales
         $validated = $request->validate([
-            'dni' => 'required|unique:pacientes,dni,' . $id,
-            'nombre' => 'required|string|max:255',
-            'apellido' => 'required|string|max:255',
-            'trabajo' => 'nullable|string|max:255',
-            'celular_personal' => 'required',
-            'distrito' => 'required',
-            'direccion' => 'required',
-            'correo' => 'nullable|email',
-            'genero' => 'nullable',
+            'nombre'           => 'required|string|max:255',
+            'apellido'         => 'required|string|max:255',
+            'dni'              => 'nullable|unique:pacientes,dni,' . $id,
+            'trabajo'          => 'nullable|string|max:255',
+            'celular_personal' => 'nullable|string',
+            'distrito'         => 'nullable|string',
+            'direccion'        => 'nullable|string',
+            'correo'           => 'nullable|email',
+            'genero'           => 'nullable|string',
             'fecha_nacimiento' => 'nullable|date',
+            'pais_nacimiento'  => 'nullable|string'
+        ],[
+            'dni.unique'      => 'Este DNI ya se encuentra registrado en el sistema.',
+            'nombre.required' => 'El nombre es obligatorio.',
+            'apellido.required' => 'El apellido es obligatorio.',
+            'correo.email'    => 'Debes ingresar un formato de correo válido.',
         ]);
 
         $paciente->update($validated);

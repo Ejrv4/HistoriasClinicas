@@ -25,19 +25,19 @@ class Paciente extends Model
     public function store(Request $request)
     {
         $request->validate([
-            'dni' => 'required|unique:pacientes,dni',
-            'trabajo' => 'required', 
-            'nombre' => 'required',
-            'apellido' => 'required',
-            'fecha_nacimiento' => 'required|date',
-            'genero' => 'required',
-            'celular_personal' => 'required',
-            'correo' => 'nullable|email',
-            'distrito' => 'required',
-            'direccion' => 'required',
-            'pais_nacimiento' => 'required'
+            'nombre'           => 'required|string|max:255',
+            'apellido'         => 'required|string|max:255',
+
+            'dni'              => 'nullable|unique:pacientes,dni',
+            'trabajo'          => 'nullable|string', 
+            'fecha_nacimiento' => 'nullable|date',
+            'genero'           => 'nullable|string',
+            'celular_personal' => 'nullable|string',
+            'correo'           => 'nullable|email',
+            'distrito'         => 'nullable|string',
+            'direccion'        => 'nullable|string',
+            'pais_nacimiento'  => 'nullable|string'
         ], [
-            // Mensaje personalizado (opcional)
             'dni.unique' => 'Este DNI ya se encuentra registrado en el sistema.',
         ]);
 
