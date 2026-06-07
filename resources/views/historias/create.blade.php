@@ -8,7 +8,8 @@
             <i class="bi bi-arrow-left me-2"></i>REGRESAR
         </a>
     </div>
-    {{-- Encabezado del Paciente --}}
+    
+    {{-- Encabezado del Paciente Blindado contra valores Null o Incompletos --}}
     <div class="card shadow-sm border-0 mb-4 bg-light">
         <div class="card-body py-3">
             <div class="row align-items-center">
@@ -60,7 +61,8 @@
         </li>
     </ul>
 
-    <form action="{{ route('historias.store') }}" method="POST" id="formAtencionMedica">
+    {{-- FORMULARIO PRINCIPAL BLINDADO CONTRA HISTORIAL NATIVO --}}
+    <form action="{{ route('historias.store') }}" method="POST" id="formAtencionMedica" autocomplete="off">
         @csrf
         <input type="hidden" name="cita_id" value="{{ $cita->id }}">
         <input type="hidden" name="paciente_id" id="paciente_id_global" value="{{ $cita->paciente_id }}">
@@ -132,19 +134,30 @@
                             <label class="fw-bold text-secondary small mb-2 text-uppercase">Examen Físico</label>
                             <textarea name="examen_fisico" class="form-control mb-3" rows="4"></textarea>
                             
-                            {{-- SECCIÓN DE DIAGNÓSTICOS MÚLTIPLES --}}
+                            {{-- SECCIÓN DE DIAGNÓSTICOS MÚLTIPLES IMPLEMENTADOS CON COMPONENTE --}}
                             <div id="diagnosticos-container">
-                                <div class="row g-2 mb-2 diagnostico-row" id="diag-row-0">
+                                <div class="row g-2 mb-3 diagnostico-row align-items-end" id="diag-row-0">
                                     <div class="col-md-8">
-                                        <label class="fw-bold text-secondary small mb-2 text-uppercase">Diagnóstico de Atención</label>
-                                        <input type="text" name="diagnosticos[0][diagnostico]" class="form-control diag-input" list="lista_descripciones_cies" autocomplete="off">
+                                        <x-custom-search-dropdown 
+                                            label="Diagnóstico de Atención"
+                                            name="diagnosticos[0][diagnostico]"
+                                            id="diag_select_0"
+                                            placeholder="Escriba descripción médica o código..."
+                                            :options="$cie10Lista->map(fn($c) => ['id' => $c->descripcion, 'nombre' => $c->descripcion . ' — ' . $c->codigo])->toArray()"
+                                            :uppercase="true"
+                                        />
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label fw-bold text-secondary small mb-2 text-uppercase">CIE-10</label>
-                                        <input type="text" name="diagnosticos[0][cie_10]" class="form-control cie-input" list="lista_cies" autocomplete="off">
+                                        <x-custom-search-dropdown 
+                                            label="CIE-10"
+                                            name="diagnosticos[0][cie_10]"
+                                            id="cie_select_0"
+                                            placeholder="Código..."
+                                            :options="$cie10Lista->map(fn($c) => ['id' => $c->codigo, 'nombre' => $c->codigo . ' — ' . $c->descripcion])->toArray()"
+                                            :uppercase="true"
+                                        />
                                     </div>
-                                    <div class="col-md-1 d-flex align-items-end pb-1">
-                                    </div>
+                                    <div class="col-md-1 pb-1"></div>
                                 </div>
                             </div>
                             
@@ -167,24 +180,34 @@
                     <div class="bg-light p-3 rounded border mb-4">
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
-                                <label class="small fw-bold text-muted">MEDICAMENTO</label>
-                                <input type="text" id="rec_med" class="form-control" list="lista_nombres_med" autocomplete="off">
-                                <datalist id="lista_nombres_med">
-                                    @foreach($medicamentosLista->unique('nombre') as $m)
-                                        <option value="{{ $m->nombre }}">
-                                    @endforeach
-                                </datalist>
+                                <x-custom-search-dropdown 
+                                    label="MEDICAMENTO"
+                                    name="temp_rec_med"
+                                    id="rec_med_select"
+                                    placeholder="Escriba el nombre del fármaco..."
+                                    :options="$medicamentosLista->unique('nombre')->map(fn($m) => ['id' => $m->nombre, 'nombre' => $m->nombre])->toArray()"
+                                    :uppercase="true"
+                                />
                             </div>
                             <div class="col-md-4">
-                                <label class="small fw-bold text-muted">CONCENTRACIÓN</label>
-                                <input type="text" id="rec_conc" class="form-control" list="lista_conc_med" autocomplete="off">
-                                <datalist id="lista_conc_med"></datalist>
+                                <x-custom-search-dropdown 
+                                    label="CONCENTRACIÓN"
+                                    name="temp_rec_conc"
+                                    id="rec_conc_select"
+                                    placeholder="Seleccione concentración..."
+                                    :options="[]"
+                                    :uppercase="true"
+                                />
                             </div>
                             <div class="col-md-4">
-                                <label class="small fw-bold text-muted">PRESENTACIÓN</label>
-                                {{-- MANTENIDO: Input nativo original --}}
-                                <input type="text" id="rec_pres" class="form-control" list="lista_pres_med" autocomplete="off">
-                                <datalist id="lista_pres_med"></datalist>
+                                <x-custom-search-dropdown 
+                                    label="PRESENTACIÓN"
+                                    name="temp_rec_pres"
+                                    id="rec_pres_select"
+                                    placeholder="Seleccione presentación..."
+                                    :options="[]"
+                                    :uppercase="true"
+                                />
                             </div>
                         </div>
 
@@ -209,7 +232,6 @@
                                 <label class="small fw-bold text-muted">FRECUENCIA</label>
                                 <div class="input-group">
                                     <input type="number" id="f_n" class="form-control calc-trigger" placeholder="Cada...">
-                                    {{-- MODIFICACIÓN: Se añade la opción Dosis Única --}}
                                     <select id="f_t" class="form-select calc-trigger">
                                         <option value="Horas">Horas</option>
                                         <option value="Días">Días</option>
@@ -277,7 +299,11 @@
                         <button class="accordion-button collapsed bg-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#h{{ $hist->id }}">
                             <div class="d-flex justify-content-between w-100 me-3 align-items-center">
                                 <span><i class="bi bi-calendar-check me-2 text-success"></i>Atención del {{ \Carbon\Carbon::parse($hist->created_at)->format('d/m/Y') }}</span>
-                                <span class="badge bg-light text-primary border border-primary-subtle px-3 py-2">CIE-10: {{ $hist->cie_10 ?? 'N/A' }}</span>
+                                
+                                {{-- CORRECCIÓN: Extrae el primer código CIE-10 de la relación de diagnósticos múltiples --}}
+                                <span class="badge bg-light text-primary border border-primary-subtle px-3 py-2">
+                                    CIE-10: {{ $hist->diagnosticos->first() ? $hist->diagnosticos->first()->cie_10 : 'N/A' }}
+                                </span>
                             </div>
                         </button>
                     </h2>
@@ -286,13 +312,34 @@
                             <div class="row mb-4">
                                 <div class="col-md-6 border-end">
                                     <h6 class="fw-bold text-muted small text-uppercase mb-2">Anamnesis / Examen</h6>
-                                    <p class="small text-dark mb-3">{{ $hist->anamnesis }}</p>
-                                    <p class="small text-muted italic">{{ $hist->examen_fisico }}</p>
+                                    <div class="p-2 bg-light rounded border-start border-4 border-info mb-2">
+                                        <p class="small text-dark mb-0">{{ $hist->anamnesis }}</p>
+                                    </div>
+                                    <div class="p-2 bg-light rounded border-start border-4 border-secondary">
+                                        <p class="small text-dark mb-0">{{ $hist->examen_fisico }}</p>
+                                    </div>
                                 </div>
                                 <div class="col-md-6 ps-md-4">
                                     <h6 class="fw-bold text-muted small text-uppercase mb-2">Diagnóstico y Plan</h6>
-                                    <p class="fw-bold text-primary mb-1">{{ $hist->diagnostico }}</p>
-                                    <div class="p-2 bg-light rounded border small text-dark">{{ $hist->plan }}</div>
+                                    
+                                    {{-- CORRECCIÓN: Itera y muestra de forma estética todos los diagnósticos registrados en esta atención --}}
+                                    <div class="mb-2">
+                                        @if($hist->diagnosticos->count() > 0)
+                                            @foreach($hist->diagnosticos as $d)
+                                                <p class="fw-bold text-primary mb-1">
+                                                    <i class="bi bi-patch-check-fill me-1 text-success"></i> 
+                                                    {{ $d->diagnostico }} <span class="text-secondary font-monospace">({{ $d->cie_10 }})</span>
+                                                </p>
+                                            @endforeach
+                                        @else
+                                            <p class="text-muted small fst-italic">Sin diagnósticos especificados.</p>
+                                        @endif
+                                    </div>
+                                    
+                                    <div class="p-2 bg-light rounded border small text-dark">
+                                        <strong>Plan de Tratamiento:</strong><br>
+                                        {{ $hist->plan }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -305,142 +352,185 @@
     </div>
 </div>
 
-{{-- DATALISTS MANTENIENDO VALORES ÚNICOS --}}
-<datalist id="lista_cies">
-    @foreach($cie10Lista as $cie)
-        <option value="{{ $cie->codigo }} — {{ $cie->descripcion }}"></option>
-    @endforeach
-</datalist>
-
-<datalist id="lista_descripciones_cies">
-    @foreach($cie10Lista as $cie)
-        <option value="{{ $cie->descripcion }} — {{ $cie->codigo }}"></option>
-    @endforeach
-</datalist>
-
 <script>
     let formChanged = false;
+    let recIdx = 0;
 
-    // --- 1. GESTIÓN DE DIAGNÓSTICOS MÚLTIPLES ---
+    // --- 1. GESTIÓN DE DIAGNÓSTICOS MÚLTIPLES CON COMPONENTES ESTÉTICOS ---
     let diagCounter = 1;
     const baseCie = @json($cie10Lista);
+    const baseMedicamentos = @json($medicamentosLista);
+
+    // Mapeo estructurado de las opciones para alimentar las filas creadas dinámicamente por JS
+    const opcionesDiagnostico = baseCie.map(c => ({ id: c.descripcion, nombre: `${c.descripcion} — ${c.codigo}` }));
+    const opcionesCie = baseCie.map(c => ({ id: c.codigo, nombre: `${c.codigo} — ${c.descripcion}` }));
+
+    // Carga inicial estática para el create
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof window.initSingleCustomDropdown === 'function') {
+            window.initSingleCustomDropdown('diag_select_0');
+            window.initSingleCustomDropdown('cie_select_0');
+        }
+    });
+
+    function generarHtmlOpciones(arrayOpts) {
+        return arrayOpts.map(o => `
+            <li data-value="${o.id}" data-text="${o.nombre}" class="dropdown-item-custom position-relative px-3 py-2 border-bottom text-dark cursor-pointer text-truncate uppercase" style="font-size: 0.88rem; font-weight: 500; border-color: #f1f3f5 !important;">
+                <span class="visible-text-span">${o.nombre}</span>
+                <div class="custom-hover-tooltip" style="position: absolute; inset: 0; padding: 0.5rem 1rem; background-color: #212529; color: #ffffff; font-size: 0.78rem; font-weight: 600; line-height: 1.3; display: flex; align-items: center; justify-content: start; pointer-events: none; visibility: hidden; opacity: 0; transition: opacity 0.1s ease; white-space: normal; z-index: 10;">${o.nombre}</div>
+            </li>`).join('');
+    }
 
     function agregarFilaDiagnostico() {
         const container = document.getElementById('diagnosticos-container');
+        
         const html = `
-            <div class="row g-2 mb-2 diagnostico-row" id="diag-row-${diagCounter}">
-                <div class="col-md-8">
-                    <input type="text" name="diagnosticos[${diagCounter}][diagnostico]" class="form-control diag-input" list="lista_descripciones_cies" autocomplete="off">
+        <div class="row g-2 mb-3 diagnostico-row align-items-end" id="diag-row-${diagCounter}">
+            <div class="col-md-8">
+                <div class="position-relative w-100 text-start custom-search-dropdown-box" id="diag_select_${diagCounter}" data-uppercase="true">
+                    <div class="position-relative">
+                        <input type="text" id="diag_select_${diagCounter}_input" placeholder="Escriba descripción médica o código..." autocomplete="off" class="form-control pe-5 text-uppercase" style="font-size: 0.9rem; font-weight: 500;" />
+                        <input type="hidden" name="diagnosticos[${diagCounter}][diagnostico]" id="diag_select_${diagCounter}_value" class="real-hidden-value">
+                        <div class="position-absolute end-0 top-50 translate-middle-y pe-3 pointer-events-none text-muted" style="line-height: 1;">
+                            <i class="bi bi-chevron-down dropdown-arrow-icon" id="diag_select_${diagCounter}_arrow" style="transition: transform 0.2s; display: inline-block;"></i>
+                        </div>
+                    </div>
+                    <ul id="diag_select_${diagCounter}_list" class="d-none position-absolute start-0 w-100 dropdown-menu-floating shadow-lg border rounded-3 p-0 m-0 overflow-auto" style="max-height: 240px; z-index: 1050; background: #ffffff; list-style: none;">${generarHtmlOpciones(opcionesDiagnostico)}</ul>
                 </div>
-                <div class="col-md-3">
-                    <input type="text" name="diagnosticos[${diagCounter}][cie_10]" class="form-control cie-input" list="lista_cies" autocomplete="off">
+            </div>
+            <div class="col-md-3">
+                <div class="position-relative w-100 text-start custom-search-dropdown-box" id="cie_select_${diagCounter}" data-uppercase="true">
+                    <div class="position-relative">
+                        <input type="text" id="cie_select_${diagCounter}_input" placeholder="Código..." autocomplete="off" class="form-control pe-5 text-uppercase" style="font-size: 0.9rem; font-weight: 500;" />
+                        <input type="hidden" name="diagnosticos[${diagCounter}][cie_10]" id="cie_select_${diagCounter}_value" class="real-hidden-value">
+                        <div class="position-absolute end-0 top-50 translate-middle-y pe-3 pointer-events-none text-muted" style="line-height: 1;">
+                            <i class="bi bi-chevron-down dropdown-arrow-icon" id="cie_select_${diagCounter}_arrow" style="transition: transform 0.2s; display: inline-block;"></i>
+                        </div>
+                    </div>
+                    <ul id="cie_select_${diagCounter}_list" class="d-none position-absolute start-0 w-100 dropdown-menu-floating shadow-lg border rounded-3 p-0 m-0 overflow-auto" style="max-height: 240px; z-index: 1050; background: #ffffff; list-style: none;">${generarHtmlOpciones(opcionesCie)}</ul>
                 </div>
-                <div class="col-md-1 d-flex align-items-end pb-1">
-                    <button type="button" onclick="eliminarFilaDiagnostico(${diagCounter})" class="btn btn-outline-danger border-0">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-            </div>`;
+            </div>
+            <div class="col-md-1 pb-1">
+                <button type="button" onclick="eliminarFilaDiagnostico(${diagCounter})" class="btn btn-outline-danger border-0">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>`;
+
         container.insertAdjacentHTML('beforeend', html);
+        
+        if (typeof window.initSingleCustomDropdown === 'function') {
+            window.initSingleCustomDropdown(`diag_select_${diagCounter}`);
+            window.initSingleCustomDropdown(`cie_select_${diagCounter}`);
+        }
+        
         diagCounter++;
     }
 
     function eliminarFilaDiagnostico(id) {
-        document.getElementById(`diag-row-${id}`).remove();
+        const row = document.getElementById(`diag-row-${id}`);
+        if(row) row.remove();
     }
 
-    document.getElementById('diagnosticos-container').addEventListener('input', function(e) {
+    document.getElementById('diagnosticos-container').addEventListener('change', function(e) {
+        if (!e.target.classList.contains('real-hidden-value')) return;
         const row = e.target.closest('.diagnostico-row');
         if (!row) return;
 
-        const inputDiag = row.querySelector('.diag-input');
-        const inputCie = row.querySelector('.cie-input');
-        const val = e.target.value;
+        const inputDiagHidden = row.querySelector('[id^="diag_select_"][id$="_value"]');
+        const inputDiagVisible = row.querySelector('[id^="diag_select_"][id$="_input"]');
+        const inputCieHidden = row.querySelector('[id^="cie_select_"][id$="_value"]');
+        const inputCieVisible = row.querySelector('[id^="cie_select_"][id$="_input"]');
+        const val = e.target.value.trim();
 
-        if (e.target.classList.contains('cie-input')) {
-            if (val.includes(' — ')) {
-                const partes = val.split(' — ');
-                inputCie.value = partes[0].trim();
-                inputDiag.value = partes[1].trim();
-            } else {
-                const coincidencia = baseCie.find(c => c.codigo.trim().toUpperCase() === val.trim().toUpperCase());
-                if (coincidencia) inputDiag.value = coincidencia.descripcion;
+        if (e.target.id.startsWith('cie_select_')) {
+            const coincidencia = baseCie.find(c => c.codigo.toUpperCase() === val.toUpperCase());
+            if (coincidencia) {
+                inputDiagHidden.value = coincidencia.descripcion;
+                inputDiagVisible.value = coincidencia.descripcion;
+                marcarItemActivo(inputDiagHidden.id.replace('_value', '_list'), coincidencia.descripcion);
             }
         }
 
-        if (e.target.classList.contains('diag-input')) {
-            if (val.includes(' — ')) {
-                const partes = val.split(' — ');
-                inputDiag.value = partes[0].trim();
-                inputCie.value = partes[1].trim();
-            } else {
-                const coincidencia = baseCie.find(c => c.descripcion.trim().toUpperCase() === val.trim().toUpperCase());
-                if (coincidencia) inputCie.value = coincidencia.codigo;
+        if (e.target.id.startsWith('diag_select_')) {
+            const coincidencia = baseCie.find(c => c.descripcion.toUpperCase() === val.toUpperCase());
+            if (coincidencia) {
+                inputCieHidden.value = coincidencia.codigo;
+                inputCieVisible.value = coincidencia.codigo;
+                marcarItemActivo(inputCieHidden.id.replace('_value', '_list'), coincidencia.codigo);
             }
         }
     });
 
-    // --- 2. LÓGICA DE MEDICAMENTOS (FILTRADO CASCADA ORIGINAL) ---
-    const baseMedicamentos = @json($medicamentosLista);
-    const inputMed = document.getElementById('rec_med');
-    const inputConc = document.getElementById('rec_conc');
-    const inputPres = document.getElementById('rec_pres');
-    const datalistConc = document.getElementById('lista_conc_med');
-    const datalistPres = document.getElementById('lista_pres_med');
+    function marcarItemActivo(listId, valorBuscar) {
+        const list = document.getElementById(listId);
+        if (!list) return;
+        const items = list.querySelectorAll('.dropdown-item-custom');
+        items.forEach(item => {
+            item.classList.remove('bg-primary', 'text-white', 'font-bold');
+            if (item.getAttribute('data-value').toUpperCase() === valorBuscar.toUpperCase()) {
+                item.classList.add('bg-primary', 'text-white', 'font-bold');
+            }
+        });
+    }
 
-    // Cambios en cascada: Nombre -> Concentraciones
-    inputMed.addEventListener('input', function() {
+    // --- 2. GESTIÓN DE RECETAS CON NUEVO DISEÑO (FILTRADO Y CASCADA) ---
+    const inputMedHidden = document.getElementById('rec_med_select_value');
+    const inputConcHidden = document.getElementById('rec_conc_select_value');
+    const inputConcVisible = document.getElementById('rec_conc_select_input');
+    const inputPresHidden = document.getElementById('rec_pres_select_value');
+    const inputPresVisible = document.getElementById('rec_pres_select_input');
+    const listConc = document.getElementById('rec_conc_select_list');
+    const listPres = document.getElementById('rec_pres_select_list');
+
+    inputMedHidden.addEventListener('change', function() {
         const val = this.value.trim().toLowerCase();
         const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase() === val);
-        datalistConc.innerHTML = ''; datalistPres.innerHTML = '';
-        inputConc.value = ''; inputPres.value = '';
+        listConc.innerHTML = ''; listPres.innerHTML = '';
+        inputConcHidden.value = ''; inputConcVisible.value = '';
+        inputPresHidden.value = ''; inputPresVisible.value = '';
         
         if (filtrados.length > 0) {
-            const concentracionesUnicas = [...new Set(filtrados.map(m => m.concentracion))];
-            concentracionesUnicas.forEach(c => datalistConc.innerHTML += `<option value="${c}">`);
-            if(concentracionesUnicas.length === 1) {
-                inputConc.value = concentracionesUnicas[0];
-                inputConc.dispatchEvent(new Event('input')); 
+            const concentracionesUnicas = [...new Set(filtrados.map(m => m.concentracion))].filter(Boolean);
+            listConc.innerHTML = generarHtmlOpciones(concentracionesUnicas.map(c => ({ id: c, nombre: c })));
+            if (concentracionesUnicas.length === 1) {
+                inputConcHidden.value = concentracionesUnicas[0];
+                inputConcVisible.value = concentracionesUnicas[0];
+                inputConcHidden.dispatchEvent(new Event('change', { bubbles: true }));
             }
         }
     });
 
-    // Cambios en cascada: Concentración -> Presentaciones
-    inputConc.addEventListener('input', function() {
-        const medVal = inputMed.value.trim().toLowerCase();
+    inputConcHidden.addEventListener('change', function() {
+        const medVal = inputMedHidden.value.trim().toLowerCase();
         const concVal = this.value.trim().toLowerCase();
-        const filtrados = baseMedicamentos.filter(m => 
-            m.nombre.toLowerCase() === medVal && m.concentracion.toLowerCase() === concVal
-        );
-        datalistPres.innerHTML = ''; inputPres.value = '';
+        const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase() === medVal && m.concentracion.toLowerCase() === concVal);
+        listPres.innerHTML = ''; inputPresHidden.value = ''; inputPresVisible.value = '';
         
         if (filtrados.length > 0) {
-            const presentacionesUnicas = [...new Set(filtrados.map(m => m.presentacion))];
-            presentacionesUnicas.forEach(p => datalistPres.innerHTML += `<option value="${p}">`);
-            if(presentacionesUnicas.length === 1) {
-                inputPres.value = presentacionesUnicas[0];
-                inputPres.dispatchEvent(new Event('input'));
+            const presentacionesUnicas = [...new Set(filtrados.map(m => m.presentacion))].filter(Boolean);
+            listPres.innerHTML = generarHtmlOpciones(presentacionesUnicas.map(p => ({ id: p, nombre: p })));
+            if (presentacionesUnicas.length === 1) {
+                inputPresHidden.value = presentacionesUnicas[0];
+                inputPresVisible.value = presentacionesUnicas[0];
+                inputPresHidden.dispatchEvent(new Event('change', { bubbles: true }));
             }
         }
     });
 
-    // Captura la presentación y desestructura Frecuencia y Duración
-    inputPres.addEventListener('input', function() {
-        const medVal = inputMed.value.trim().toLowerCase();
-        const concVal = inputConc.value.trim().toLowerCase();
+    inputPresHidden.addEventListener('change', function() {
+        const medVal = inputMedHidden.value.trim().toLowerCase();
+        const concVal = inputConcHidden.value.trim().toLowerCase();
         const presVal = this.value.trim().toLowerCase();
 
         const medExacto = baseMedicamentos.find(m => 
-            m.nombre.toLowerCase() === medVal && 
-            m.concentracion.toLowerCase() === concVal &&
-            m.presentacion.toLowerCase() === presVal
+            m.nombre.toLowerCase() === medVal && m.concentracion.toLowerCase() === concVal && m.presentacion.toLowerCase() === presVal
         );
 
         if (medExacto) {
             if (medExacto.dosis) document.getElementById('rec_dos').value = medExacto.dosis;
             if (medExacto.via_administracion) document.getElementById('rec_via').value = medExacto.via_administracion;
             
-            // Separar y comparar FRECUENCIA
             if (medExacto.frecuencia) {
                 if (medExacto.frecuencia === 'Dosis Única') {
                     document.getElementById('f_t').value = 'Dosis Única';
@@ -448,29 +538,21 @@
                     const datosFrecuencia = separarNumeroYTexto(medExacto.frecuencia);
                     if (datosFrecuencia) {
                         document.getElementById('f_n').value = datosFrecuencia.numero;
-                        const tiempoFormateado = datosFrecuencia.texto.charAt(0).toUpperCase() + datosFrecuencia.texto.slice(1);
-                        document.getElementById('f_t').value = tiempoFormateado;
+                        document.getElementById('f_t').value = datosFrecuencia.text.charAt(0).toUpperCase() + datosFrecuencia.text.slice(1);
                     }
                 }
             }
             
-            // Separar y comparar DURACIÓN
             if (medExacto.duracion) {
                 const datosDuracion = separarNumeroYTexto(medExacto.duracion);
                 if (datosDuracion) {
                     document.getElementById('d_n').value = datosDuracion.numero;
-                    const tiempoFormateado = datosDuracion.texto.charAt(0).toUpperCase() + datosDuracion.texto.slice(1);
-                    document.getElementById('d_t').value = tiempoFormateado;
+                    document.getElementById('d_t').value = datosDuracion.text.charAt(0).toUpperCase() + datosDuracion.text.slice(1);
                 }
             } else if (medExacto.frecuencia === 'Dosis Única') {
                 document.getElementById('d_n').value = '';
             }
-
-            if (medExacto.cantidad_total) {
-                document.getElementById('rec_total').value = medExacto.cantidad_total;
-            }
-            
-            // Forzamos el recálculo y la activación de bloqueos tras la inyección de datos
+            if (medExacto.cantidad_total) document.getElementById('rec_total').value = medExacto.cantidad_total;
             calcularCantidadTotal();
         }
     });
@@ -479,15 +561,62 @@
         if (!stringOriginal) return null;
         const matches = stringOriginal.trim().match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
         if (matches && matches.length === 3) {
-            return {
-                numero: matches[1],
-                texto: matches[2].toLowerCase()
-            };
+            return { numero: matches[1], text: matches[2].toLowerCase() };
         }
         return null;
     }
 
-    // --- 3. CÁLCULO DE DOSIS Y CONTROL DE INHABILITACIÓN POR DOSIS ÚNICA ---
+    function injectReceta(med, conc, pres, dos, via, freq, dur, total) {
+        const fila = `<tr id="fila_${recIdx}" class="align-middle text-center">
+            <td class="text-start"><strong>${med}</strong><br><span class="badge bg-secondary">${conc}</span></td>
+            <td><small>${pres}</small></td><td>${dos} - ${via}</td><td>${freq}</td><td>${dur}</td><td class="fw-bold text-primary">${total}</td>
+            <td><button type="button" onclick="removeMed(${recIdx})" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-x-lg"></i></button></td></tr>`;
+        document.getElementById('listaRecetaVisual').insertAdjacentHTML('beforeend', fila);
+
+        const hiddens = `<div id="hidden_${recIdx}">
+            <input type="hidden" name="recetas[${recIdx}][medicamento]" value="${med}">
+            <input type="hidden" name="recetas[${recIdx}][concentracion]" value="${conc}">
+            <input type="hidden" name="recetas[${recIdx}][presentacion]" value="${pres}">
+            <input type="hidden" name="recetas[${recIdx}][dosis]" value="${dos}">
+            <input type="hidden" name="recetas[${recIdx}][via_administracion]" value="${via}">
+            <input type="hidden" name="recetas[${recIdx}][frecuencia]" value="${freq}">
+            <input type="hidden" name="recetas[${recIdx}][duracion]" value="${dur}">
+            <input type="hidden" name="recetas[${recIdx}][cantidad_total]" value="${total}"></div>`;
+        document.getElementById('inputs-receta-ocultos').insertAdjacentHTML('beforeend', hiddens);
+        recIdx++;
+    }
+
+    function addMedicamento() {
+        const med = inputMedHidden.value;
+        const conc = inputConcHidden.value;
+        const pres = inputPresHidden.value;
+        const dos = document.getElementById('rec_dos').value;
+        const via = document.getElementById('rec_via').value;
+        const f_tipo = document.getElementById('f_t').value;
+        
+        let freq = f_tipo === 'Dosis Única' ? 'Dosis Única' : document.getElementById('f_n').value + ' ' + f_tipo;
+        let dur = f_tipo === 'Dosis Única' ? 'N/A' : document.getElementById('d_n').value + ' ' + document.getElementById('d_t').value;
+        const total = document.getElementById('rec_total').value;
+
+        if(!med || !dos || !via || !pres || total <= 0) {
+            return alert("❌ Error: Faltan completar campos obligatorios del fármaco.");
+        }
+
+        injectReceta(med, conc, pres, dos, via, freq, dur, total);
+        ['rec_dos','f_n','d_n'].forEach(id => document.getElementById(id).value = '');
+        inputMedHidden.value = ''; document.getElementById('rec_med_select_input').value = '';
+        inputConcHidden.value = ''; inputConcVisible.value = '';
+        inputPresHidden.value = ''; inputPresVisible.value = '';
+        listConc.innerHTML = ''; listPres.innerHTML = '';
+        document.getElementById('rec_total').value = '0';
+        calcularCantidadTotal();
+    }
+
+    function removeMed(id) {
+        document.getElementById(`fila_${id}`).remove();
+        document.getElementById(`hidden_${id}`).remove();
+    }
+
     function calcularCantidadTotal() {
         const dosisInput = document.getElementById('rec_dos');
         const f_numInput = document.getElementById('f_n');
@@ -495,31 +624,16 @@
         const d_numInput = document.getElementById('d_n');
         const d_tipoSelect = document.getElementById('d_t');
         const totalInput = document.getElementById('rec_total');
-
         const dosis = parseFloat(dosisInput.value) || 0;
 
-        // MODIFICACIÓN: Si es Dosis Única, bloqueamos y limpiamos Frecuencia (numérica) y Duración completa
         if (f_tipoSelect.value === 'Dosis Única') {
-            f_numInput.value = "";
-            f_numInput.disabled = true;
-            f_numInput.placeholder = "N/A";
-            
-            d_numInput.value = "";
-            d_numInput.disabled = true;
-            d_numInput.placeholder = "N/A";
+            f_numInput.value = ""; f_numInput.disabled = true; f_numInput.placeholder = "N/A";
+            d_numInput.value = ""; d_numInput.disabled = true; d_numInput.placeholder = "N/A";
             d_tipoSelect.disabled = true;
-
-            if (dosis > 0) {
-                totalInput.value = Math.ceil(dosis);
-            } else {
-                totalInput.value = 0;
-            }
+            totalInput.value = dosis > 0 ? Math.ceil(dosis) : 0;
         } else {
-            // Desbloqueo clásico si cambian a Horas o Días
-            f_numInput.disabled = false;
-            f_numInput.placeholder = "Cada...";
-            d_numInput.disabled = false;
-            d_numInput.placeholder = "Por...";
+            f_numInput.disabled = false; f_numInput.placeholder = "Cada...";
+            d_numInput.disabled = false; d_numInput.placeholder = "Por...";
             d_tipoSelect.disabled = false;
 
             const f_num = parseFloat(f_numInput.value) || 0;
@@ -536,77 +650,18 @@
             }
         }
     }
-
+    
     document.querySelectorAll('.calc-trigger').forEach(el => {
         el.addEventListener('input', calcularCantidadTotal);
-        el.addEventListener('change', calcularCantidadTotal); 
+        el.addEventListener('change', calcularCantidadTotal);
     });
 
-    // --- 4. MANEJO DE RECETAS ---
-    let recIdx = 0;
-    function addMedicamento() {
-        const med = document.getElementById('rec_med').value;
-        const conc = document.getElementById('rec_conc').value;
-        const pres = document.getElementById('rec_pres').value;
-        const dos = document.getElementById('rec_dos').value;
-        const via = document.getElementById('rec_via').value;
-        const f_tipo = document.getElementById('f_t').value;
-        
-        // MODIFICACIÓN: Si es Dosis Única armamos los strings planos correspondientes para la receta
-        let freq = f_tipo === 'Dosis Única' ? 'Dosis Única' : document.getElementById('f_n').value + ' ' + f_tipo;
-        let dur = f_tipo === 'Dosis Única' ? 'N/A' : document.getElementById('d_n').value + ' ' + document.getElementById('d_t').value;
-        const total = document.getElementById('rec_total').value;
-
-        if(!med || !dos || !via || !pres || total <= 0) {
-            return alert("Datos incompletos o Cantidad Total inválida.");
-        }
-
-        const fila = `<tr id="fila_${recIdx}" class="align-middle text-center">
-            <td class="text-start"><strong>${med}</strong><br><span class="badge bg-secondary">${conc}</span></td>
-            <td><small>${pres}</small></td>
-            <td>${dos} - ${via}</td>
-            <td>${freq}</td><td>${dur}</td>
-            <td class="fw-bold text-primary">${total}</td>
-            <td><button type="button" onclick="removeMed(${recIdx})" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-x-lg"></i></button></td></tr>`;
-        
-        document.getElementById('listaRecetaVisual').insertAdjacentHTML('beforeend', fila);
-        
-        const hiddens = `<div id="hidden_${recIdx}">
-            <input type="hidden" name="recetas[${recIdx}][medicamento]" value="${med}">
-            <input type="hidden" name="recetas[${recIdx}][concentracion]" value="${conc}">
-            <input type="hidden" name="recetas[${recIdx}][presentacion]" value="${pres}">
-            <input type="hidden" name="recetas[${recIdx}][dosis]" value="${dos}">
-            <input type="hidden" name="recetas[${recIdx}][via_administracion]" value="${via}">
-            <input type="hidden" name="recetas[${recIdx}][frecuencia]" value="${freq}">
-            <input type="hidden" name="recetas[${recIdx}][duracion]" value="${dur}">
-            <input type="hidden" name="recetas[${recIdx}][cantidad_total]" value="${total}"></div>`;
-            
-        document.getElementById('inputs-receta-ocultos').insertAdjacentHTML('beforeend', hiddens);
-        recIdx++;
-        
-        // Limpieza y restauración clásica
-        ['rec_med','rec_conc','rec_pres','rec_dos','f_n','d_n'].forEach(id => document.getElementById(id).value = '');
-        document.getElementById('rec_total').value = '0';
-        
-        // Ejecutamos cálculo para remover bloqueos tras añadir el ítem
-        calcularCantidadTotal();
-    }
-
-    function removeMed(id) {
-        document.getElementById(`fila_${id}`).remove();
-        document.getElementById(`hidden_${id}`).remove();
-    }
-
-// --- 5. GUARDAR / ACTUALIZAR ANTECEDENTES MANUAL CON RESET DE ADVERTENCIA ---
+    // --- 3. GUARDAR ANTECEDENTES MANUAL CON RESET DE ADVERTENCIA ---
     async function guardarAntecedentesManual(event) {
         const statusLabel = document.getElementById('save-status');
         const btn = event.currentTarget;
         const pacienteId = document.getElementById('paciente_id_global').value;
-        
-        if (!pacienteId) {
-            alert("Error: No se encontró el ID del paciente.");
-            return;
-        }
+        if (!pacienteId) return alert("Error: No se encontró el ID del paciente.");
 
         const textoMedico = document.querySelector('textarea[name="Medico"]').value.trim();
         const textoQuirurgico = document.querySelector('textarea[name="Quirúrgico"]').value.trim();
@@ -617,100 +672,44 @@
         statusLabel.className = 'text-muted';
         statusLabel.innerHTML = '<i class="bi bi-arrow-repeat spinner-border spinner-border-sm me-1"></i>Guardando...';
         
-        const payload = {
-            paciente_id: pacienteId,
-            Medico: textoMedico,
-            Quirúrgico: textoQuirurgico,
-            Alergia: textoAlergia,
-            Medicación: textoMedicacion
-        };
-        
         try {
             const response = await fetch("{{ route('antecedentes.guardar_todo') }}", {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(payload)
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+                body: JSON.stringify({ paciente_id: pacienteId, Medico: textoMedico, Quirúrgico: textoQuirurgico, Alergia: textoAlergia, Medicación: textoMedicacion })
             });
-            
             const result = await response.json();
-            
             if (response.ok && result.status === 'success') {
                 statusLabel.className = 'text-success fw-bold';
                 statusLabel.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardado correctamente';
-
-                // 1. Refrescar la lista lateral "Referencia Histórica" en vivo
                 const listaReferencia = document.getElementById('lista-referencia');
                 if (listaReferencia) {
                     let nuevoHtml = '';
-                    if (textoMedico) {
-                        nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
-                            <strong class="text-primary d-block small">MÉDICO</strong><span>${textoMedico}</span></li>`;
-                    }
-                    if (textoQuirurgico) {
-                        nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
-                            <strong class="text-primary d-block small">QUIRÚRGICO</strong><span>${textoQuirurgico}</span></li>`;
-                    }
-                    if (textoAlergia) {
-                        nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
-                            <strong class="text-danger d-block small">ALERGIA</strong><span>${textoAlergia}</span></li>`;
-                    }
-                    if (textoMedicacion) {
-                        nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-0 border-bottom">
-                            <strong class="text-success d-block small">MEDICACIÓN</strong><span>${textoMedicacion}</span></li>`;
-                    }
-                    if (!nuevoHtml) {
-                        nuevoHtml = '<li class="list-group-item bg-transparent text-muted fst-italic">Sin registros previos.</li>';
-                    }
-                    listaReferencia.innerHTML = nuevoHtml;
+                    if (textoMedico) nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-bottom"><strong class="text-primary d-block small">MÉDICO</strong><span>${textoMedico}</span></li>`;
+                    if (textoQuirurgico) nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-bottom"><strong class="text-primary d-block small">QUIRÚRGICO</strong><span>${textoQuirurgico}</span></li>`;
+                    if (textoAlergia) nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-bottom"><strong class="text-danger d-block small">ALERGIA</strong><span>${textoAlergia}</span></li>`;
+                    if (textoMedicacion) nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-bottom"><strong class="text-success d-block small">MEDICACIÓN</strong><span>${textoMedicacion}</span></li>`;
+                    listaReferencia.innerHTML = nuevoHtml || '<li class="list-group-item bg-transparent text-muted fst-italic">Sin registros previos.</li>';
                 }
-
-                // =======================================================================
-                // 🔄 SOLUCIÓN AL AVISO: Apagamos la bandera de cambios pendientes
-                // =======================================================================
                 formChanged = false;
-                // =======================================================================
-
                 setTimeout(() => { statusLabel.innerHTML = ''; }, 3000);
-            } else {
-                throw new Error(result.message || 'Error desconocido');
             }
         } catch (error) {
             statusLabel.className = 'text-danger fw-bold';
             statusLabel.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>Error al guardar`;
-        } finally {
-            btn.disabled = false;
-        }
+        } finally { btn.disabled = false; }
     }
 
     const atencionForm = document.getElementById('formAtencionMedica');
-    atencionForm.addEventListener('input', () => {
-        formChanged = true;
-    });
-
+    atencionForm.addEventListener('input', () => { formChanged = true; });
     document.addEventListener('click', function (e) {
         const target = e.target.closest('a');
         if (formChanged && target && target.href && !target.hasAttribute('data-bs-toggle')) {
-            const confirmacion = confirm("⚠️ No se han guardado los cambios de la atención actual. ¿Está seguro de que desea salir sin guardar?");
-            if (!confirmacion) {
-                e.preventDefault();
-            }
+            if (!confirm("⚠️ No se han guardado los cambios de la atención actual. ¿Desea salir sin guardar?")) e.preventDefault();
         }
     });
-
-    window.addEventListener('beforeunload', function (e) {
-        if (formChanged) {
-            e.preventDefault();
-            e.returnValue = ''; 
-        }
-    });
-
-    atencionForm.addEventListener('submit', () => {
-        formChanged = false; 
-    });
+    window.addEventListener('beforeunload', function (e) { if (formChanged) { e.preventDefault(); e.returnValue = ''; } });
+    atencionForm.addEventListener('submit', () => { formChanged = false; });
 </script>
 
 <style>

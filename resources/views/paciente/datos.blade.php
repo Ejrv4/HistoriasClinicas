@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container-fluid">
-    {{-- ENCABEZADO DE EXPEDIENTE --}}
+    {{-- Bloque Superior de Título y Botones --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <a href="{{ route('pacientes.index') }}" class="btn btn-sm btn-outline-secondary mb-2">
@@ -62,8 +62,10 @@
                                         <i class="bi bi-calendar-check me-2 text-success"></i>
                                         Atención del {{ \Carbon\Carbon::parse($hist->created_at)->format('d/m/Y') }}
                                     </span>
+                                    
+                                    {{-- CORRECCIÓN: Busca el primer código CIE-10 de la relación de diagnósticos múltiples --}}
                                     <span class="badge bg-light text-primary border border-primary-subtle px-3 py-2">
-                                        CIE-10: {{ $hist->cie_10 ?? 'N/A' }}
+                                        CIE-10: {{ $hist->diagnosticos->first() ? $hist->diagnosticos->first()->cie_10 : 'N/A' }}
                                     </span>
                                 </div>
                             </button>
@@ -84,7 +86,21 @@
                                     </div>
                                     <div class="col-md-6 ps-md-4">
                                         <h6 class="fw-bold text-muted small text-uppercase mb-2">Diagnóstico y Plan</h6>
-                                        <p class="fw-bold text-primary mb-1">{{ $hist->diagnostico }}</p>
+                                        
+                                        {{-- CORRECCIÓN: Itera y muestra todos los diagnósticos múltiples asociados a esta consulta --}}
+                                        <div class="mb-3">
+                                            @if($hist->diagnosticos->count() > 0)
+                                                @foreach($hist->diagnosticos as $d)
+                                                    <p class="fw-bold text-primary mb-1">
+                                                        <i class="bi bi-patch-check-fill me-1 text-success"></i> 
+                                                        {{ $d->diagnostico }} <span class="text-secondary font-monospace">({{ $d->cie_10 }})</span>
+                                                    </p>
+                                                @endforeach
+                                            @else
+                                                <p class="text-muted small fst-italic">Sin diagnósticos especificados.</p>
+                                            @endif
+                                        </div>
+
                                         <div class="p-3 bg-light rounded border small text-dark">
                                             <strong>Plan de Tratamiento:</strong><br>
                                             {{ $hist->plan }}

@@ -14,14 +14,14 @@
         </div>
     @endif
 
-    <form action="{{ route('pacientes.store') }}" method="POST" class="card shadow-sm border-0 p-4">
+    {{-- FORMULARIO BLINDADO CONTRA HISTORIAL NATIVO --}}
+    <form action="{{ route('pacientes.store') }}" method="POST" class="card shadow-sm border-0 p-4" autocomplete="off">
         @csrf
         
         <h5 class="text-primary border-bottom pb-2 fw-bold">Datos de Identidad</h5>
-        <div class="row mb-3">
+        <div class="row mb-3 align-items-end">
             <div class="col-md-3">
                 <label class="form-label fw-medium">DNI</label>
-                {{-- REMOVIDO: required --}}
                 <input type="text" name="dni" 
                     class="form-control @error('dni') is-invalid @enderror" 
                     value="{{ old('dni') }}">
@@ -29,24 +29,29 @@
                     <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                 @enderror
             </div>
+            
+            {{-- IMPLEMENTACIÓN: GÉNERO CON EL NUEVO COMPONENTE --}}
             <div class="col-md-3">
-                <label class="form-label fw-medium">Género</label>
-                {{-- REMOVIDO: required y añadido option vacío --}}
-                <select name="genero" class="form-select">
-                    <option value="" {{ old('genero') == '' ? 'selected' : '' }}>-- No especificado --</option>
-                    <option value="Masculino" {{ old('genero') == 'Masculino' ? 'selected' : '' }}>Masculino</option>
-                    <option value="Femenino" {{ old('genero') == 'Femenino' ? 'selected' : '' }}>Femenino</option>
-                    <option value="Otros" {{ old('genero') == 'Otros' ? 'selected' : '' }}>Otros</option>
-                </select>
+                <x-custom-search-dropdown 
+                    label="Género"
+                    name="genero"
+                    id="paciente_genero_select"
+                    placeholder="-- No especificado --"
+                    :options="[
+                        ['id' => 'Masculino', 'nombre' => 'Masculino'],
+                        ['id' => 'Femenino', 'nombre' => 'Femenino'],
+                        ['id' => 'Otros', 'nombre' => 'Otros']
+                    ]"
+                    :selectedValue="old('genero')"
+                />
             </div>
+            
             <div class="col-md-3">
                 <label class="form-label fw-medium">Fecha Nacimiento</label>
-                {{-- REMOVIDO: required --}}
                 <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento') }}">
             </div>
             <div class="col-md-3">
                 <label class="form-label fw-medium">Lugar de Nacimiento</label>
-                {{-- REMOVIDO: required --}}
                 <input type="text" name="pais_nacimiento" class="form-control" value="{{ old('pais_nacimiento') }}">
             </div>
         </div>
@@ -54,12 +59,10 @@
         <div class="row mb-3">
             <div class="col-md-4">
                 <label class="form-label fw-medium">Nombres <span class="text-danger">*</span></label>
-                {{-- MANTENIDO: Estrictamente obligatorio --}}
                 <input type="text" name="nombre" class="form-control" value="{{ old('nombre') }}" required>
             </div>
             <div class="col-md-4">
                 <label class="form-label fw-medium">Apellidos <span class="text-danger">*</span></label>
-                {{-- MANTENIDO: Estrictamente obligatorio --}}
                 <input type="text" name="apellido" class="form-control" value="{{ old('apellido') }}" required>
             </div>
             <div class="col-md-4">
@@ -69,10 +72,9 @@
         </div>
 
         <h5 class="text-primary border-bottom pb-2 mt-4 fw-bold">Contacto y Ubicación</h5>
-        <div class="row mb-3">
+        <div class="row mb-3 align-items-end">
             <div class="col-md-4">
                 <label class="form-label fw-medium">Celular Personal</label>
-                {{-- REMOVIDO: required --}}
                 <input type="text" name="celular_personal" class="form-control" value="{{ old('celular_personal') }}">
             </div>
             <div class="col-md-4">
@@ -80,56 +82,61 @@
                 <input type="email" name="correo" class="form-control" value="{{ old('correo') }}" placeholder="ejemplo@correo.com">
             </div>
             
+            {{-- IMPLEMENTACIÓN: DISTRITO CON EL NUEVO COMPONENTE --}}
             <div class="col-md-4">
-                <label class="form-label fw-medium">Distrito de Residencia</label>
-                {{-- REMOVIDO: required --}}
-                <input type="text" name="distrito" id="input-distrito" list="distritos-lima" class="form-control" value="{{ old('distrito') }}" placeholder="Escriba para buscar..." autocomplete="off">
-                
-                <datalist id="distritos-lima">
-                    <option value="Lima">
-                    <option value="Ancón">
-                    <option value="Ate">
-                    <option value="Barranco">
-                    <option value="Breña">
-                    <option value="Carabayllo">
-                    <option value="Chaclacayo">
-                    <option value="Chorrillos">
-                    <option value="Cieneguilla">
-                    <option value="Comas">
-                    <option value="El Agustino">
-                    <option value="Independencia">
-                    <option value="Jesús María">
-                    <option value="La Molina">
-                    <option value="La Victoria">
-                    <option value="Lince">
-                    <option value="Los Olivos">
-                    <option value="Lurigancho-Chosica">
-                    <option value="Lurín">
-                    <option value="Magdalena del Mar">
-                    <option value="Miraflores">
-                    <option value="Pachacámac">
-                    <option value="Pucusana">
-                    <option value="Pueblo Libre">
-                    <option value="Puente Piedra">
-                    <option value="Punta Hermosa">
-                    <option value="Punta Negra">
-                    <option value="Rímac">
-                    <option value="San Bartolo">
-                    <option value="San Borja">
-                    <option value="San Isidro">
-                    <option value="San Juan de Lurigancho">
-                    <option value="San Juan de Miraflores">
-                    <option value="San Luis">
-                    <option value="San Martín de Porres">
-                    <option value="San Miguel">
-                    <option value="Santa Anita">
-                    <option value="Santa María del Mar">
-                    <option value="Santa Rosa">
-                    <option value="Santiago de Surco">
-                    <option value="Surquillo">
-                    <option value="Villa El Salvador">
-                    <option value="Villa María del Triunfo">
-                </datalist>
+                <x-custom-search-dropdown 
+                    label="Distrito de Residencia"
+                    name="distrito"
+                    id="paciente_distrito_select"
+                    placeholder="Escriba para buscar..."
+                    :options="[
+                        ['id' => 'Lima', 'nombre' => 'Lima'],
+                        ['id' => 'Ancón', 'nombre' => 'Ancón'],
+                        ['id' => 'Ate', 'nombre' => 'Ate'],
+                        ['id' => 'Barranco', 'nombre' => 'Barranco'],
+                        ['id' => 'Breña', 'nombre' => 'Breña'],
+                        ['id' => 'Carabayllo', 'nombre' => 'Carabayllo'],
+                        ['id' => 'Chaclacayo', 'nombre' => 'Chaclacayo'],
+                        ['id' => 'Chorrillos', 'nombre' => 'Chorrillos'],
+                        ['id' => 'Cieneguilla', 'nombre' => 'Cieneguilla'],
+                        ['id' => 'Comas', 'nombre' => 'Comas'],
+                        ['id' => 'El Agustino', 'nombre' => 'El Agustino'],
+                        ['id' => 'Independencia', 'nombre' => 'Independencia'],
+                        ['id' => 'Jesús María', 'nombre' => 'Jesús María'],
+                        ['id' => 'La Molina', 'nombre' => 'La Molina'],
+                        ['id' => 'La Victoria', 'nombre' => 'La Victoria'],
+                        ['id' => 'Lince', 'nombre' => 'Lince'],
+                        ['id' => 'Los Olivos', 'nombre' => 'Los Olivos'],
+                        ['id' => 'Lurigancho-Chosica', 'nombre' => 'Lurigancho-Chosica'],
+                        ['id' => 'Lurín', 'nombre' => 'Lurín'],
+                        ['id' => 'Magdalena del Mar', 'nombre' => 'Magdalena del Mar'],
+                        ['id' => 'Miraflores', 'nombre' => 'Miraflores'],
+                        ['id' => 'Pachacámac', 'nombre' => 'Pachacámac'],
+                        ['id' => 'Pucusana', 'nombre' => 'Pucusana'],
+                        ['id' => 'Pueblo Libre', 'nombre' => 'Pueblo Libre'],
+                        ['id' => 'Puente Piedra', 'nombre' => 'Puente Piedra'],
+                        ['id' => 'Punta Hermosa', 'nombre' => 'Punta Hermosa'],
+                        ['id' => 'Punta Negra', 'nombre' => 'Punta Negra'],
+                        ['id' => 'Rímac', 'nombre' => 'Rímac'],
+                        ['id' => 'San Bartolo', 'nombre' => 'San Bartolo'],
+                        ['id' => 'San Borja', 'nombre' => 'San Borja'],
+                        ['id' => 'San Isidro', 'nombre' => 'San Isidro'],
+                        ['id' => 'San Juan de Lurigancho', 'nombre' => 'San Juan de Lurigancho'],
+                        ['id' => 'San Juan de Miraflores', 'nombre' => 'San Juan de Miraflores'],
+                        ['id' => 'San Luis', 'nombre' => 'San Luis'],
+                        ['id' => 'San Martín de Porres', 'nombre' => 'San Martín de Porres'],
+                        ['id' => 'San Miguel', 'nombre' => 'San Miguel'],
+                        ['id' => 'Santa Anita', 'nombre' => 'Santa Anita'],
+                        ['id' => 'Santa María del Mar', 'nombre' => 'Santa María del Mar'],
+                        ['id' => 'Santa Rosa', 'nombre' => 'Santa Rosa'],
+                        ['id' => 'Santiago de Surco', 'nombre' => 'Santiago de Surco'],
+                        ['id' => 'Surquillo', 'nombre' => 'Surquillo'],
+                        ['id' => 'Villa El Salvador', 'nombre' => 'Villa El Salvador'],
+                        ['id' => 'Villa María del Triunfo', 'nombre' => 'Villa María del Triunfo']
+                    ]"
+                    :selectedValue="old('distrito')"
+                    :uppercase="true"
+                />
             </div>
         </div>
 

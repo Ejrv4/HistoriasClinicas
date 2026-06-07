@@ -12,7 +12,10 @@ class PacienteController extends Controller
     // Listar todos los pacientes
     public function index()
     {
-        $pacientes = Paciente::all();
+        // 🔄 OPTIMIZACIÓN CRÍTICA: Precargamos las historias clínicas y sus diagnósticos correspondientes
+        // Esto evita que la base de datos colapse al calcular el CIE-10 relacional en la tabla del Index.
+        $pacientes = Paciente::with(['historiasClinicas.diagnosticos'])->get();
+        
         $diasConCitas = Cita::select('fecha')->distinct()->pluck('fecha')->toArray();
         return view('paciente.index', compact('pacientes', 'diasConCitas'));
     }
@@ -26,7 +29,6 @@ class PacienteController extends Controller
     // Guardar el nuevo paciente en la BD
     public function store(Request $request)
     {
-        // MODIFICACIÓN: Ajustado para que solo nombre y apellido sean obligatorios
         $validated = $request->validate([
             'nombre'           => 'required|string|max:255',
             'apellido'         => 'required|string|max:255',
@@ -40,10 +42,10 @@ class PacienteController extends Controller
             'direccion'        => 'nullable|string',
             'pais_nacimiento'  => 'nullable|string'
         ],[
-            'dni.unique'      => 'Este DNI ya se encuentra registrado en el sistema.',
-            'nombre.required' => 'El nombre es obligatorio.',
+            'dni.unique'       => 'Este DNI ya se encuentra registrado en el sistema.',
+            'nombre.required'  => 'El nombre es obligatorio.',
             'apellido.required' => 'El apellido es obligatorio.',
-            'correo.email'    => 'Debes ingresar un formato de correo válido.',
+            'correo.email'     => 'Debes ingresar un format de correo válido.',
         ]);
 
         $paciente = Paciente::create($validated);
@@ -92,7 +94,6 @@ class PacienteController extends Controller
     {
         $paciente = Paciente::findOrFail($id);
 
-        // MODIFICACIÓN: Ajustado también en el update para mantener la concordancia de campos opcionales
         $validated = $request->validate([
             'nombre'           => 'required|string|max:255',
             'apellido'         => 'required|string|max:255',
@@ -106,10 +107,10 @@ class PacienteController extends Controller
             'fecha_nacimiento' => 'nullable|date',
             'pais_nacimiento'  => 'nullable|string'
         ],[
-            'dni.unique'      => 'Este DNI ya se encuentra registrado en el sistema.',
-            'nombre.required' => 'El nombre es obligatorio.',
+            'dni.unique'       => 'Este DNI ya se encuentra registrado en el sistema.',
+            'nombre.required'  => 'El nombre es obligatorio.',
             'apellido.required' => 'El apellido es obligatorio.',
-            'correo.email'    => 'Debes ingresar un formato de correo válido.',
+            'correo.email'     => 'Debes ingresar un formato de correo válido.',
         ]);
 
         $paciente->update($validated);
@@ -123,7 +124,7 @@ class PacienteController extends Controller
         $antecedentes = \App\Models\Antecedente::where('paciente_id', $id)->get();
         
         $historial = \App\Models\HistoriaClinica::where('paciente_id', $id)
-                        ->with(['cita.recetas', 'diagnosticos']) // Incluimos diagnósticos múltiples
+                        ->with(['cita.recetas', 'diagnosticos']) // Mantener la carga de diagnósticos múltiples para la vista datos
                         ->orderBy('created_at', 'desc')
                         ->get();
 
@@ -151,7 +152,6 @@ class PacienteController extends Controller
             // 3. Finalmente eliminamos al paciente
             $paciente->delete();
 
-            // Respondemos en JSON para que el Javascript de la vista remueva la fila con animación
             return response()->json([
                 'status' => 'success',
                 'message' => 'Paciente y todo su historial clínico eliminados permanentemente.'
