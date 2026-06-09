@@ -164,4 +164,11 @@ class PacienteController extends Controller
             ], 500);
         }
     }
+
+    public function ignorarAlertas($id)
+    {
+        $paciente = Paciente::findOrFail($id);
+        $paciente->update(['ignorar_alerta' => true]);
+        return back()->with('success', 'Las alertas para este paciente han sido silenciadas.');
+    }
 }

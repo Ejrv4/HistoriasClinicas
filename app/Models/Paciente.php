@@ -20,7 +20,8 @@ class Paciente extends Model
         'correo', 
         'distrito',
         'direccion',
-        'pais_nacimiento'
+        'pais_nacimiento',
+        'ignorar_alerta'
     ];
 
     public function historiasClinicas(): HasMany

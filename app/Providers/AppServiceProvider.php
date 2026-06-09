@@ -24,12 +24,15 @@ class AppServiceProvider extends ServiceProvider
         // Compartir las variables de alertas globales en la vista del layout
         View::composer('layouts.app', function ($view) {
             // 1. Conteo de pacientes con información incompleta
-            $conteoIncompletos = \App\Models\Paciente::whereNull('dni')
-                ->orWhereNull('fecha_nacimiento')
-                ->orWhereNull('genero')
-                ->orWhereNull('celular_personal')
-                ->orWhereNull('distrito')
-                ->count();
+            $conteoIncompletos = \App\Models\Paciente::where('ignorar_alerta', false)
+            ->where(function($query) {
+                $query->whereNull('dni')
+                    ->orWhereNull('fecha_nacimiento')
+                    ->orWhereNull('genero')
+                    ->orWhereNull('celular_personal')
+                    ->orWhereNull('distrito');
+            })
+            ->count();
 
             // Buscamos citas de hoy que NO tengan una historia clínica asociada (atención pendiente)
             $hoy = \Carbon\Carbon::today()->toDateString();

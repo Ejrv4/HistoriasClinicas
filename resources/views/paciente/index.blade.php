@@ -59,12 +59,13 @@
                     <tbody>
                         @foreach($pacientes as $paciente)
                             @php
-                                // Evaluamos dinámicamente si el registro carece de campos obligatorios
-                                $isIncompleto = empty($paciente->dni) || 
+                                $camposVacios = empty($paciente->dni) || 
                                                 empty($paciente->fecha_nacimiento) || 
                                                 empty($paciente->genero) || 
                                                 empty($paciente->celular_personal) || 
                                                 empty($paciente->distrito);
+
+                                $isIncompleto = ($camposVacios && !$paciente->ignorar_alerta);
                             @endphp
                             
                             {{-- Inyección condicional de clase CSS si es incompleto --}}
@@ -132,6 +133,16 @@
                                                     <i class="bi bi-trash-fill me-2"></i>Eliminar Registro
                                                 </button>
                                             </li>
+                                            @if($isIncompleto && !$paciente->ignorar_alerta)
+                                                <li>
+                                                    <form action="{{ route('pacientes.ignorarAlertas', $paciente->id) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="dropdown-item py-2 text-warning">
+                                                            <i class="bi bi-eye-slash me-2"></i> Ignorar alertas de datos
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            @endif
                                         </ul>
                                     </div>
                                 </td>
