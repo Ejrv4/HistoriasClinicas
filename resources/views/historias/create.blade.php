@@ -432,7 +432,6 @@
         if(row) row.remove();
     }
 
-    // --- CORRECCIÓN DE SINCRONIZACIÓN EN CASMÉDICA SIN RECURSIVIDAD EN DIAGNÓSTICOS ---
     document.getElementById('diagnosticos-container').addEventListener('change', function(e) {
         if (!e.target.classList.contains('real-hidden-value')) return;
 
@@ -490,7 +489,6 @@
     const listConc = document.getElementById('rec_conc_select_list');
     const listPres = document.getElementById('rec_pres_select_list');
 
-    // Funciones de llamada directa para la cascada de recetas (Evita los dispatchEvent infinitos)
     function actualizarConcentraciones(medNombre) {
         const val = medNombre.trim().toLowerCase();
         const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase() === val);
@@ -550,7 +548,7 @@
                     const datosFrecuencia = separarNumeroYTexto(medExacto.frecuencia);
                     if (datosFrecuencia) {
                         document.getElementById('f_n').value = datosFrecuencia.numero;
-                        document.getElementById('f_t').value = datosFrecuencia.text.charAt(0).toUpperCase() + datosFrecuencia.text.slice(1);
+                        document.getElementById('f_t').value = datosFrecuencia.text;
                     }
                 }
             }
@@ -559,7 +557,7 @@
                 const datosDuracion = separarNumeroYTexto(medExacto.duracion);
                 if (datosDuracion) {
                     document.getElementById('d_n').value = datosDuracion.numero;
-                    document.getElementById('d_t').value = datosDuracion.text.charAt(0).toUpperCase() + datosDuracion.text.slice(1);
+                    document.getElementById('d_t').value = datosDuracion.text;
                 }
             } else if (medExacto.frecuencia === 'Dosis Única') {
                 document.getElementById('d_n').value = '';
@@ -569,7 +567,6 @@
         }
     }
 
-    // Vinculación de los eventos directos sin propagación circular
     inputMedHidden.addEventListener('change', function() {
         actualizarConcentraciones(this.value);
     });
@@ -582,11 +579,31 @@
         procesarMedicamentoExacto(inputMedHidden.value, inputConcHidden.value, this.value);
     });
 
+    // 🔄 CORRECCIÓN QUIRÚRGICA: Mapeo y pluralización inteligente para compatibilidad con selectores HTML
     function separarNumeroYTexto(stringOriginal) {
         if (!stringOriginal) return null;
         const matches = stringOriginal.trim().match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
         if (matches && matches.length === 3) {
-            return { numero: matches[1], text: matches[2].toLowerCase() };
+            let unidadTexto = matches[2].trim().toLowerCase();
+            
+            // Diccionario de normalización a plural formal capitalizado
+            if (unidadTexto === 'mes' || unidadTexto === 'meses') {
+                unidadTexto = 'Meses';
+            } else if (unidadTexto === 'día' || unidadTexto === 'dia' || unidadTexto === 'días' || unidadTexto === 'dias') {
+                unidadTexto = 'Días';
+            } else if (unidadTexto === 'semana' || unidadTexto === 'semanas') {
+                unidadTexto = 'Semanas';
+            } else if (unidadTexto === 'hora' || unidadTexto === 'horas') {
+                unidadTexto = 'Horas';
+            } else {
+                // Capitalización genérica como salvaguarda
+                unidadTexto = unidadTexto.charAt(0).toUpperCase() + unidadTexto.slice(1);
+            }
+
+            return { 
+                numero: matches[1], 
+                text: unidadTexto 
+            };
         }
         return null;
     }
