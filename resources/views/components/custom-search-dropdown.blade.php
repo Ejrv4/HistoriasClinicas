@@ -47,7 +47,7 @@
     {{-- LISTA FLOTANTE CON FILTRADO EN TIEMPO REAL --}}
     <ul id="{{ $uniqueId }}_list" class="d-none position-absolute start-0 w-100 dropdown-menu-floating shadow-lg border rounded-3 p-0 m-0 overflow-auto" style="max-height: 240px; z-index: 1050; background: #ffffff; list-style: none;">
         @if(count($options) === 0)
-            <li class="px-3 py-2 text-muted fst-italic text-center small">No hay opciones disponibles</li>
+            <li class="px-3 py-2 text-muted fst-italic text-center small empty-placeholder">No hay opciones disponibles</li>
         @else
             @foreach($options as $index => $opt)
                 @php
@@ -91,10 +91,13 @@ if (typeof window.initSingleCustomDropdown !== 'function') {
         
         let lastSelectedText = input.value;
 
+        // Evitar comportamientos destructivos en focus
         input.addEventListener('focus', () => {
             list.classList.remove('d-none');
             if(arrow) arrow.style.transform = 'rotate(180deg)';
-            input.value = '';
+            // 🔄 MODIFICACIÓN: Ya no vaciamos el texto de golpe para no romper estados lógicos,
+            // en su lugar, seleccionamos el texto para que si escribe lo sobreescriba.
+            input.select();
             filtrar(input.value);
         });
 
@@ -122,33 +125,46 @@ if (typeof window.initSingleCustomDropdown !== 'function') {
             const val = item.getAttribute('data-value');
             const text = item.getAttribute('data-text');
 
-            hiddenValue.value = val;
-            input.value = text;
-            lastSelectedText = text;
+            // 🔄 MODIFICACIÓN: Bloqueamos asignaciones redundantes para cortar bucles infinitos
+            if (hiddenValue.value !== val) {
+                hiddenValue.value = val;
+                input.value = text;
+                lastSelectedText = text;
 
-            const items = list.querySelectorAll('.dropdown-item-custom');
-            items.forEach(i => i.classList.remove('bg-primary', 'text-white', 'fw-bold'));
-            item.classList.add('bg-primary', 'text-white', 'fw-bold');
+                const items = list.querySelectorAll('.dropdown-item-custom');
+                items.forEach(i => i.classList.remove('bg-primary', 'text-white', 'fw-bold'));
+                item.classList.add('bg-primary', 'text-white', 'fw-bold');
+
+                // Disparamos un único evento controlado hacia arriba
+                hiddenValue.dispatchEvent(new Event('change', { bubbles: true }));
+            }
 
             list.classList.add('d-none');
             if(arrow) arrow.style.transform = 'rotate(0deg)';
-
-            hiddenValue.dispatchEvent(new Event('change', { bubbles: true }));
-            input.dispatchEvent(new Event('change', { bubbles: true }));
         });
 
+        // Cerrar al hacer clic fuera de manera segura
         document.addEventListener('mousedown', (e) => {
             if (!container.contains(e.target)) {
                 list.classList.add('d-none');
                 if(arrow) arrow.style.transform = 'rotate(0deg)';
-                input.value = lastSelectedText;
+                // Si el médico dejó vacío el buscador sin elegir nada, restauramos el último texto válido
+                if (input.value.trim() === '') {
+                    input.value = lastSelectedText;
+                }
             }
         });
     };
 }
 
+// 🔄 MODIFICACIÓN: Solo auto-inicializa si NO pertenece a una fila dinámica (como las de HC o Recetas)
+// Las filas dinámicas se gestionan manualmente en sus respectivas vistas para evitar duplicación de eventos.
 document.addEventListener('DOMContentLoaded', () => {
-    window.initSingleCustomDropdown('{{ $uniqueId }}');
+    const parentBox = document.getElementById('{{ $uniqueId }}');
+    const isDynamicRow = parentBox ? parentBox.closest('.diagnostico-row') : null;
+    if (!isDynamicRow) {
+        window.initSingleCustomDropdown('{{ $uniqueId }}');
+    }
 });
 </script>
 

@@ -432,29 +432,30 @@
         if(row) row.remove();
     }
 
+    // --- CORRECCIÓN DE SINCRONIZACIÓN EN CASMÉDICA SIN RECURSIVIDAD EN DIAGNÓSTICOS ---
     document.getElementById('diagnosticos-container').addEventListener('change', function(e) {
         if (!e.target.classList.contains('real-hidden-value')) return;
+
         const row = e.target.closest('.diagnostico-row');
         if (!row) return;
 
         const inputDiagHidden = row.querySelector('[id^="diag_select_"][id$="_value"]');
-        const inputDiagVisible = row.querySelector('[id^="diag_select_"][id$="_input"]');
         const inputCieHidden = row.querySelector('[id^="cie_select_"][id$="_value"]');
-        const inputCieVisible = row.querySelector('[id^="cie_select_"][id$="_input"]');
-        const val = e.target.value.trim();
+        
+        if (!e.target.value) return;
 
         if (e.target.id.startsWith('cie_select_')) {
-            const coincidencia = baseCie.find(c => c.codigo.toUpperCase() === val.toUpperCase());
-            if (coincidencia) {
+            const coincidencia = baseCie.find(c => c.codigo.toUpperCase() === e.target.value.toUpperCase());
+            if (coincidencia && inputDiagHidden.value !== coincidencia.descripcion) {
+                const inputDiagVisible = row.querySelector('[id^="diag_select_"][id$="_input"]');
                 inputDiagHidden.value = coincidencia.descripcion;
                 inputDiagVisible.value = coincidencia.descripcion;
                 marcarItemActivo(inputDiagHidden.id.replace('_value', '_list'), coincidencia.descripcion);
             }
-        }
-
-        if (e.target.id.startsWith('diag_select_')) {
-            const coincidencia = baseCie.find(c => c.descripcion.toUpperCase() === val.toUpperCase());
-            if (coincidencia) {
+        } else if (e.target.id.startsWith('diag_select_')) {
+            const coincidencia = baseCie.find(c => c.descripcion.toUpperCase() === e.target.value.toUpperCase());
+            if (coincidencia && inputCieHidden.value !== coincidencia.codigo) {
+                const inputCieVisible = row.querySelector('[id^="cie_select_"][id$="_input"]');
                 inputCieHidden.value = coincidencia.codigo;
                 inputCieVisible.value = coincidencia.codigo;
                 marcarItemActivo(inputCieHidden.id.replace('_value', '_list'), coincidencia.codigo);
@@ -474,7 +475,13 @@
         });
     }
 
-    // --- 2. GESTIÓN DE RECETAS CON NUEVO DISEÑO (FILTRADO Y CASCADA) ---
+    // --- 2. GESTIÓN DE RECETAS CON NUEVO DISEÑO (FILTRADO Y CASCADA AISLADA) ---
+    if (typeof window.initSingleCustomDropdown === 'function') {
+        window.initSingleCustomDropdown('rec_med_select');
+        window.initSingleCustomDropdown('rec_conc_select');
+        window.initSingleCustomDropdown('rec_pres_select');
+    }
+
     const inputMedHidden = document.getElementById('rec_med_select_value');
     const inputConcHidden = document.getElementById('rec_conc_select_value');
     const inputConcVisible = document.getElementById('rec_conc_select_input');
@@ -483,9 +490,11 @@
     const listConc = document.getElementById('rec_conc_select_list');
     const listPres = document.getElementById('rec_pres_select_list');
 
-    inputMedHidden.addEventListener('change', function() {
-        const val = this.value.trim().toLowerCase();
+    // Funciones de llamada directa para la cascada de recetas (Evita los dispatchEvent infinitos)
+    function actualizarConcentraciones(medNombre) {
+        const val = medNombre.trim().toLowerCase();
         const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase() === val);
+        
         listConc.innerHTML = ''; listPres.innerHTML = '';
         inputConcHidden.value = ''; inputConcVisible.value = '';
         inputPresHidden.value = ''; inputPresVisible.value = '';
@@ -493,35 +502,38 @@
         if (filtrados.length > 0) {
             const concentracionesUnicas = [...new Set(filtrados.map(m => m.concentracion))].filter(Boolean);
             listConc.innerHTML = generarHtmlOpciones(concentracionesUnicas.map(c => ({ id: c, nombre: c })));
+            
             if (concentracionesUnicas.length === 1) {
                 inputConcHidden.value = concentracionesUnicas[0];
                 inputConcVisible.value = concentracionesUnicas[0];
-                inputConcHidden.dispatchEvent(new Event('change', { bubbles: true }));
+                actualizarPresentaciones(medNombre, concentracionesUnicas[0]);
             }
         }
-    });
+    }
 
-    inputConcHidden.addEventListener('change', function() {
-        const medVal = inputMedHidden.value.trim().toLowerCase();
-        const concVal = this.value.trim().toLowerCase();
+    function actualizarPresentaciones(medNombre, concNombre) {
+        const medVal = medNombre.trim().toLowerCase();
+        const concVal = concNombre.trim().toLowerCase();
         const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase() === medVal && m.concentracion.toLowerCase() === concVal);
+        
         listPres.innerHTML = ''; inputPresHidden.value = ''; inputPresVisible.value = '';
         
         if (filtrados.length > 0) {
             const presentacionesUnicas = [...new Set(filtrados.map(m => m.presentacion))].filter(Boolean);
             listPres.innerHTML = generarHtmlOpciones(presentacionesUnicas.map(p => ({ id: p, nombre: p })));
+            
             if (presentacionesUnicas.length === 1) {
                 inputPresHidden.value = presentacionesUnicas[0];
                 inputPresVisible.value = presentacionesUnicas[0];
-                inputPresHidden.dispatchEvent(new Event('change', { bubbles: true }));
+                procesarMedicamentoExacto(medNombre, concNombre, presentacionesUnicas[0]);
             }
         }
-    });
+    }
 
-    inputPresHidden.addEventListener('change', function() {
-        const medVal = inputMedHidden.value.trim().toLowerCase();
-        const concVal = inputConcHidden.value.trim().toLowerCase();
-        const presVal = this.value.trim().toLowerCase();
+    function procesarMedicamentoExacto(medNombre, concNombre, presNombre) {
+        const medVal = medNombre.trim().toLowerCase();
+        const concVal = concNombre.trim().toLowerCase();
+        const presVal = presNombre.trim().toLowerCase();
 
         const medExacto = baseMedicamentos.find(m => 
             m.nombre.toLowerCase() === medVal && m.concentracion.toLowerCase() === concVal && m.presentacion.toLowerCase() === presVal
@@ -555,6 +567,19 @@
             if (medExacto.cantidad_total) document.getElementById('rec_total').value = medExacto.cantidad_total;
             calcularCantidadTotal();
         }
+    }
+
+    // Vinculación de los eventos directos sin propagación circular
+    inputMedHidden.addEventListener('change', function() {
+        actualizarConcentraciones(this.value);
+    });
+
+    inputConcHidden.addEventListener('change', function() {
+        actualizarPresentaciones(inputMedHidden.value, this.value);
+    });
+
+    inputPresHidden.addEventListener('change', function() {
+        procesarMedicamentoExacto(inputMedHidden.value, inputConcHidden.value, this.value);
     });
 
     function separarNumeroYTexto(stringOriginal) {
