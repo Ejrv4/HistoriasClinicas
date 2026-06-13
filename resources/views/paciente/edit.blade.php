@@ -17,7 +17,7 @@
                 <div class="row mb-4">
                     <div class="col-md-3">
                         <label class="form-label fw-bold">DNI</label>
-                        <input type="text" name="dni" class="form-control @error('dni') is-invalid @enderror" value="{{ old('dni', $paciente->dni) }}" required>
+                        <input type="text" name="dni" class="form-control @error('dni') is-invalid @enderror" value="{{ old('dni', $paciente->dni) }}">
                         @error('dni')
                             <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                         @enderror
@@ -32,11 +32,11 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Fecha de Nacimiento</label>
-                        <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento', $paciente->fecha_nacimiento) }}" required>
+                        <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento', $paciente->fecha_nacimiento) }}">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold">País de Nacimiento</label>
-                        <input type="text" name="pais_nacimiento" class="form-control" value="{{ old('pais_nacimiento', $paciente->pais_nacimiento) }}" required>
+                        <input type="text" name="pais_nacimiento" class="form-control" value="{{ old('pais_nacimiento', $paciente->pais_nacimiento) }}">
                     </div>
                 </div>
 
@@ -60,7 +60,7 @@
                 <div class="row mb-4">
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Celular Personal</label>
-                        <input type="text" name="celular_personal" class="form-control" value="{{ old('celular_personal', $paciente->celular_personal) }}" required>
+                        <input type="text" name="celular_personal" class="form-control" value="{{ old('celular_personal', $paciente->celular_personal) }}">
                     </div>
                     <div class="col-md-8">
                         <label class="form-label fw-bold">Correo Electrónico</label>
@@ -71,11 +71,11 @@
                 <div class="row mb-4">
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Distrito</label>
-                        <input type="text" name="distrito" class="form-control" value="{{ old('distrito', $paciente->distrito) }}" required>
+                        <input type="text" name="distrito" class="form-control" value="{{ old('distrito', $paciente->distrito) }}">
                     </div>
                     <div class="col-md-8">
                         <label class="form-label fw-bold">Dirección</label>
-                        <input type="text" name="direccion" class="form-control" value="{{ old('direccion', $paciente->direccion) }}" required>
+                        <input type="text" name="direccion" class="form-control" value="{{ old('direccion', $paciente->direccion) }}">
                     </div>
                 </div>
 
