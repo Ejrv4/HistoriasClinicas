@@ -2,12 +2,13 @@
 
 @section('content')
 <div class="container-fluid">
+    {{-- Bloque Superior de Título y Botones --}}
     <div class="card shadow-sm border-0">
         <div class="card-header bg-white py-3">
             <h5 class="mb-0 text-primary fw-bold"><i class="bi bi-calendar-plus me-2"></i>Nueva Cita Médica</h5>
         </div>
         <div class="card-body p-4">
-            <form action="{{ route('citas.store') }}" method="POST">
+            <form action="{{ route('citas.store') }}" method="POST" autocomplete="off">
                 @csrf
                 
                 <div class="row mb-4">
@@ -52,15 +53,17 @@
                         <label class="form-label fw-bold">Fecha de Cita</label>
                         <input type="date" name="fecha" class="form-control" value="{{ date('Y-m-d') }}" required>
                     </div>
+                    
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold">Hora</label>
-                        <input type="time" name="hora" class="form-control" 
+                        <input type="time" name="hora" id="inputHora" class="form-control" 
+                            step="60"
                             value="{{ request('hora_redondeada') ?? (request('quick_start') ? date('H:i') : '') }}" 
                             required>
                     </div>
+                    
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold">Motivo de Cita</label>
-                        {{-- CAMBIO: De Input a Select con opción por defecto 'Control' --}}
                         <select name="motivo" id="motivoCita" class="form-select" required>
                             <option value="Control" selected>Control</option>
                             <option value="Paciente nuevo">Paciente nuevo</option>
@@ -86,11 +89,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const select = document.getElementById('selectPaciente');
     const status = document.getElementById('statusBusqueda');
     const selectMotivo = document.getElementById('motivoCita');
+    const inputHora = document.getElementById('inputHora');
     const options = Array.from(select.options).filter(opt => opt.value !== "");
 
     const urlParams = new URLSearchParams(window.location.search);
     const quickPacienteId = urlParams.get('paciente_id');
     const isQuickStart = urlParams.get('quick_start');
+
+    // Saneamiento forzado complementario por JavaScript para asegurar formato HH:mm sin segundos ni AM/PM
+    if (inputHora && inputHora.value) {
+        let partes = inputHora.value.split(':');
+        if (partes.length >= 2) {
+            inputHora.value = `${partes[0].padStart(2, '0')}:${partes[1].padStart(2, '0')}`;
+        }
+    }
 
     if (quickPacienteId) {
         const optionToSelect = options.find(opt => opt.value == quickPacienteId);
@@ -105,15 +117,27 @@ document.addEventListener('DOMContentLoaded', function() {
         selectMotivo.value = "Paciente nuevo";
         selectMotivo.focus();
     }
-    // ---------------------------------------
+
+    function removerTildes(texto) {
+        if (!texto) return "";
+        return texto
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "") // Remueve acentos universalmente
+            .trim();
+    }
 
     function filtrar() {
-        const valApellido = inputApellido.value.toLowerCase().trim();
+        // Normalizamos el apellido ingresado por el usuario (quita tildes y pasa a minúsculas)
+        const valApellido = removerTildes(inputApellido.value);
         const valDNI = inputDNI.value.trim();
         let coincidentes = [];
 
         options.forEach(opt => {
-            const matchApellido = valApellido.length >= 2 && opt.dataset.apellido.includes(valApellido);
+            // Normalizamos también el apellido que viene del dataset del HTML
+            const apellidoPac = removerTildes(opt.dataset.apellido);
+
+            const matchApellido = valApellido.length >= 2 && apellidoPac.includes(valApellido);
             const matchDNI = valDNI.length >= 3 && opt.dataset.dni.includes(valDNI);
 
             if (matchApellido || matchDNI) {
@@ -133,6 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
             status.innerHTML = '<span class="text-success"><i class="bi bi-check-all"></i> Paciente encontrado.</span>';
         } else if (coincidentes.length > 1) {
             select.value = "";
+            // 🛠️ Limpiado el "grid" que se colaba en el string
             status.innerHTML = `<span class="text-primary"><i class="bi bi-info-circle"></i> ${coincidentes.length} coincidencias.</span>`;
         }
     }

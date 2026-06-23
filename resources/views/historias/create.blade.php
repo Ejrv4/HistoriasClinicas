@@ -361,11 +361,9 @@
     const baseCie = @json($cie10Lista);
     const baseMedicamentos = @json($medicamentosLista);
 
-    // Mapeo estructurado de las opciones para alimentar las filas creadas dinámicamente por JS
     const opcionesDiagnostico = baseCie.map(c => ({ id: c.descripcion, nombre: `${c.descripcion} — ${c.codigo}` }));
     const opcionesCie = baseCie.map(c => ({ id: c.codigo, nombre: `${c.codigo} — ${c.descripcion}` }));
 
-    // Carga inicial estática para el create
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof window.initSingleCustomDropdown === 'function') {
             window.initSingleCustomDropdown('diag_select_0');
@@ -562,8 +560,14 @@
             } else if (medExacto.frecuencia === 'Dosis Única') {
                 document.getElementById('d_n').value = '';
             }
-            if (medExacto.cantidad_total) document.getElementById('rec_total').value = medExacto.cantidad_total;
-            calcularCantidadTotal();
+            
+            // 🔄 SOLUCIÓN: Forzamos la asignación directa del valor maestro registrado en la base de datos
+            if (medExacto.cantidad_total) {
+                document.getElementById('rec_total').value = medExacto.cantidad_total;
+            }
+            
+            // Evaluamos la inyección condicional de deshabilitado de campos si corresponde
+            configurarVisibilidadCampos();
         }
     }
 
@@ -579,14 +583,12 @@
         procesarMedicamentoExacto(inputMedHidden.value, inputConcHidden.value, this.value);
     });
 
-    // 🔄 CORRECCIÓN QUIRÚRGICA: Mapeo y pluralización inteligente para compatibilidad con selectores HTML
     function separarNumeroYTexto(stringOriginal) {
         if (!stringOriginal) return null;
         const matches = stringOriginal.trim().match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
         if (matches && matches.length === 3) {
             let unidadTexto = matches[2].trim().toLowerCase();
             
-            // Diccionario de normalización a plural formal capitalizado
             if (unidadTexto === 'mes' || unidadTexto === 'meses') {
                 unidadTexto = 'Meses';
             } else if (unidadTexto === 'día' || unidadTexto === 'dia' || unidadTexto === 'días' || unidadTexto === 'dias') {
@@ -596,14 +598,10 @@
             } else if (unidadTexto === 'hora' || unidadTexto === 'horas') {
                 unidadTexto = 'Horas';
             } else {
-                // Capitalización genérica como salvaguarda
                 unidadTexto = unidadTexto.charAt(0).toUpperCase() + unidadTexto.slice(1);
             }
 
-            return { 
-                numero: matches[1], 
-                text: unidadTexto 
-            };
+            return { numero: matches[1], text: unidadTexto };
         }
         return null;
     }
@@ -651,12 +649,29 @@
         inputPresHidden.value = ''; inputPresVisible.value = '';
         listConc.innerHTML = ''; listPres.innerHTML = '';
         document.getElementById('rec_total').value = '0';
-        calcularCantidadTotal();
+        configurarVisibilidadCampos();
     }
 
     function removeMed(id) {
         document.getElementById(`fila_${id}`).remove();
         document.getElementById(`hidden_${id}`).remove();
+    }
+
+    function configurarVisibilidadCampos() {
+        const f_tipoSelect = document.getElementById('f_t');
+        const f_numInput = document.getElementById('f_n');
+        const d_numInput = document.getElementById('d_n');
+        const d_tipoSelect = document.getElementById('d_t');
+
+        if (f_tipoSelect.value === 'Dosis Única') {
+            f_numInput.value = ""; f_numInput.disabled = true; f_numInput.placeholder = "N/A";
+            d_numInput.value = ""; d_numInput.disabled = true; d_numInput.placeholder = "N/A";
+            d_tipoSelect.disabled = true;
+        } else {
+            f_numInput.disabled = false; f_numInput.placeholder = "Cada...";
+            d_numInput.disabled = false; d_numInput.placeholder = "Por...";
+            d_tipoSelect.disabled = false;
+        }
     }
 
     function calcularCantidadTotal() {
@@ -669,15 +684,8 @@
         const dosis = parseFloat(dosisInput.value) || 0;
 
         if (f_tipoSelect.value === 'Dosis Única') {
-            f_numInput.value = ""; f_numInput.disabled = true; f_numInput.placeholder = "N/A";
-            d_numInput.value = ""; d_numInput.disabled = true; d_numInput.placeholder = "N/A";
-            d_tipoSelect.disabled = true;
             totalInput.value = dosis > 0 ? Math.ceil(dosis) : 0;
         } else {
-            f_numInput.disabled = false; f_numInput.placeholder = "Cada...";
-            d_numInput.disabled = false; d_numInput.placeholder = "Por...";
-            d_tipoSelect.disabled = false;
-
             const f_num = parseFloat(f_numInput.value) || 0;
             const f_tipo = f_tipoSelect.value;
             const d_num = parseFloat(d_numInput.value) || 0;
@@ -693,9 +701,18 @@
         }
     }
     
+    // 🔄 SOLUCIÓN: Separamos la validación de visibilidad y el cálculo automático.
+    // El trigger matemático de cálculo automático SOLO se ejecuta en inputs manuales,
+    // dejando intacto el valor maestro de rec_total cuando se selecciona el fármaco.
     document.querySelectorAll('.calc-trigger').forEach(el => {
-        el.addEventListener('input', calcularCantidadTotal);
-        el.addEventListener('change', calcularCantidadTotal);
+        el.addEventListener('input', function() {
+            configurarVisibilidadCampos();
+            calcularCantidadTotal();
+        });
+        el.addEventListener('change', function() {
+            configurarVisibilidadCampos();
+            calcularCantidadTotal();
+        });
     });
 
     // --- 3. GUARDAR ANTECEDENTES MANUAL CON RESET DE ADVERTENCIA ---

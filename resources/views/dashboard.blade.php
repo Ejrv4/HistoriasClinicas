@@ -6,7 +6,6 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-black text-uppercase m-0" style="letter-spacing: -1px; color: #1e293b;">Calendario de citas</h2>
-            <p class="text-muted small fw-medium">{{ \Carbon\Carbon::parse($fechaSeleccionada)->format('d/m/Y') }}</p>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('pacientes.create') }}" class="btn btn-success shadow-sm d-flex align-items-center fw-bold">

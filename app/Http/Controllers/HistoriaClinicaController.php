@@ -34,7 +34,6 @@ class HistoriaClinicaController extends Controller
     {
         $request->validate([
             'cita_id' => 'required',
-            'anamnesis' => 'required',
         ]);
 
         // 1. Guardar o actualizar la base de la Historia Clínica
