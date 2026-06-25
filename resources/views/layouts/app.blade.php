@@ -316,7 +316,7 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2 text-secondary fw-bold" style="font-size: 0.82rem;">
                     <i class="bi bi-gear-fill text-primary fs-5"></i>
-                    <span class="font-monospace uppercase tracking-wider">Modo Oscuro</span>
+                    <span class="font-monospace uppercase tracking-wider">Modo Oscuro (beta)</span>
                 </div>
                 <div class="form-check form-switch m-0 p-0 d-flex align-items-center">
                     <input class="form-check-input cursor-pointer" type="checkbox" id="darkModeToggle" style="width: 2.5em; height: 1.25em; margin-left: 0;">
