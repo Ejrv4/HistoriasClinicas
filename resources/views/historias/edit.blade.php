@@ -1,67 +1,72 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
-    {{-- Botón Regresar Alineado --}}
+<div class="container-fluid p-0">
+    {{-- Botón Regresar Alineado y Limpio --}}
     <div class="mb-3">
-        <a href="{{ route('dashboard') }}" class="btn btn-link text-decoration-none text-secondary fw-bold ps-0">
-            <i class="bi bi-arrow-left me-2"></i>REGRESAR
+        <a href="{{ route('dashboard') }}" class="btn btn-link text-decoration-none text-secondary fw-bold ps-0 transition-row-normal d-inline-flex align-items-center" style="font-size: 0.88rem;">
+            <i class="bi bi-arrow-left me-2 fs-5"></i>REGRESAR AL CALENDARIO
         </a>
     </div>
     
-    {{-- ENCABEZADO --}}
-    <div class="card shadow-sm border-0 mb-4 bg-light">
-        <div class="card-body py-3">
-            <div class="row align-items-center">
+    {{-- Encabezado del Paciente con Diseño de Alta Gama --}}
+    <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden" style="background: #ffffff; border-left: 5px solid #4e73df !important;">
+        <div class="card-body p-4">
+            <div class="row align-items-center g-3">
                 <div class="col-md-8">
-                    <h4 class="fw-bold text-primary mb-1">
-                        <i class="bi bi-person-vcard me-2"></i>
-                        {{ $cita->paciente->apellido }}, {{ $cita->paciente->nombre }}
-                        <span class="text-dark">
-                            {{-- PROTECCIÓN: Solo calcula la edad si la fecha de nacimiento existe --}}
+                    <div class="d-flex align-items-center gap-2 mb-1.5 flex-wrap">
+                        <h3 class="fw-black text-dark m-0 tracking-tight" style="font-size: 1.6rem; letter-spacing: -0.5px;">
+                            {{ $cita->paciente->apellido }}, {{ $cita->paciente->nombre }} 
+                        </h3>
+                        <span class="text-secondary fw-semibold font-monospace" style="font-size: 1.1rem;">
                             @if($cita->paciente->fecha_nacimiento)
                                 ({{ \Carbon\Carbon::parse($cita->paciente->fecha_nacimiento)->age }} años{{ $cita->paciente->trabajo ? ', ' . $cita->paciente->trabajo : '' }})
                             @else
                                 (Edad no registrada{{ $cita->paciente->trabajo ? ', ' . $cita->paciente->trabajo : '' }})
                             @endif
-                        </span>
-                        {{-- PROTECCIÓN: Solo muestra la medalla de género si este fue seleccionado --}}
+                        </span> 
                         @if($cita->paciente->genero)
-                            <span class="badge bg-info-subtle text-info border border-info-subtle ms-2" style="font-size: 0.8rem;">
-                                {{ $cita->paciente->genero }}
+                            <span class="badge border font-monospace fw-bold px-2 py-1 rounded-2" style="font-size: 0.75rem; background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd;">
+                                {{ strtoupper($cita->paciente->genero) }}
                             </span>
                         @endif
-                    </h4>
-                    <span class="badge bg-dark">HC N° {{ str_pad($cita->paciente->id, 6, '0', STR_PAD_LEFT) }}</span>
-                    <span class="badge bg-primary ms-1">CITA N° {{ str_pad($cita->id, 6, '0', STR_PAD_LEFT) }}</span>
-                    {{-- PROTECCIÓN: Muestra "N/R" (No registrado) si no tiene DNI --}}
-                    <span class="text-muted ms-3 small">DNI: {{ $cita->paciente->dni ?? 'N/R' }}</span>
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 font-monospace">
+                        <span class="badge bg-dark px-2.5 py-1.5 rounded-2">HC N° {{ str_pad($cita->paciente->id, 6, '0', STR_PAD_LEFT) }}</span>
+                        <span class="badge bg-primary px-2.5 py-1.5 rounded-2" style="background-color: #4e73df !important;">CITA N° {{ str_pad($cita->id, 6, '0', STR_PAD_LEFT) }}</span>
+                        <span class="text-muted ms-2 small fw-bold">DNI: <span class="text-dark">{{ $cita->paciente->dni ?? 'N/R' }}</span></span>
+                    </div>
                 </div>
                 <div class="col-md-4 text-md-end">
-                    <div class="d-inline-block text-start">
-                        <small class="text-muted d-block small-caps">País</small>
-                        <span class="fw-bold">{{ $cita->paciente->pais_nacimiento ?? 'No registrado' }}</span>
+                    <div class="d-inline-block text-start bg-light px-3 py-2 rounded-3 border">
+                        <small class="text-secondary d-block uppercase font-monospace fw-bold mb-0.5" style="font-size: 0.65rem; letter-spacing: 0.5px;">País de Origen</small>
+                        <span class="fw-bold text-dark" style="font-size: 0.95rem;"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ $cita->paciente->pais_nacimiento ?? 'No registrado' }}</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <ul class="nav nav-tabs border-0 mb-3" id="hcTabs" role="tablist">
+    {{-- Pestañas de Navegación Estilizadas --}}
+    <ul class="nav nav-tabs border-0 mb-4 gap-2" id="hcTabs" role="tablist">
         <li class="nav-item">
-            <button class="nav-link active fw-bold px-4" id="antecedentes-tab" data-bs-toggle="tab" data-bs-target="#pestana-antecedentes" type="button">Antecedentes</button>
+            <button class="nav-link active fw-bold px-4 rounded-3 border-0 transition-row-normal" id="antecedentes-tab" data-bs-toggle="tab" data-bs-target="#pestana-antecedentes" type="button">
+                <i class="bi bi-file-earmark-person me-2"></i>Antecedentes
+            </button>
         </li>
         <li class="nav-item">
-            <button class="nav-link fw-bold px-4" id="consulta-tab" data-bs-toggle="tab" data-bs-target="#consulta" type="button">Historia Clínica</button>
+            <button class="nav-link fw-bold px-4 rounded-3 border-0 transition-row-normal" id="consulta-tab" data-bs-toggle="tab" data-bs-target="#consulta" type="button">
+                <i class="bi bi-file-earmark-medical me-2"></i>Historia Clínica
+            </button>
         </li>
         <li class="nav-item">
-            <button class="nav-link fw-bold px-4 text-danger" id="receta-tab" data-bs-toggle="tab" data-bs-target="#pestana-receta" type="button">
+            <button class="nav-link fw-bold px-4 text-danger rounded-3 border-0 transition-row-normal" id="receta-tab" data-bs-toggle="tab" data-bs-target="#pestana-receta" type="button">
                 <i class="bi bi-capsule me-2"></i>Receta Médica
             </button>
         </li>
     </ul>
 
-    {{-- FORMULARIO PRINCIPAL ACTUALIZADO CON COBERTURA ANTI-HISTORIAL --}}
+    {{-- FORMULARIO PRINCIPAL EN MODO EDICIÓN (PUT) --}}
     <form action="{{ route('historias.update', $historia->id) }}" method="POST" id="formAtencionMedica" autocomplete="off">
         @csrf
         @method('PUT')
@@ -72,13 +77,13 @@
             
             {{-- PESTAÑA ANTECEDENTES --}}
             <div class="tab-pane fade show active" id="pestana-antecedentes" role="tabpanel">
-                <div class="card border-0 shadow-sm p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
-                        <h5 class="fw-bold text-primary mb-0"><i class="bi bi-file-earmark-medical me-2"></i>Antecedentes del Paciente</h5>
+                <div class="card border-0 shadow-sm p-4 rounded-4" style="background: #ffffff;">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                        <h5 class="fw-bold text-dark mb-0 d-flex align-items-center"><i class="bi bi-file-earmark-medical-fill text-primary me-2 fs-4"></i>Actualizar Antecedentes</h5>
                         <div class="d-flex align-items-center gap-3">
-                            <span id="save-status" class="small fw-semibold"></span>
-                            <button type="button" onclick="guardarAntecedentesManual(event)" class="btn btn-success fw-bold shadow-sm">
-                                <i class="bi bi-save me-2"></i>ACTUALIZAR ANTECEDENTES
+                            <span id="save-status" class="small fw-semibold font-monospace"></span>
+                            <button type="button" onclick="guardarAntecedentesManual(event)" class="btn btn-success fw-bold shadow-sm rounded-3 border-0 px-3 py-2" style="background-color: #10b981; font-size: 0.85rem;">
+                                <i class="bi bi-save2-fill me-2"></i>ACTUALIZAR ANTECEDENTES
                             </button>
                         </div>
                     </div>
@@ -86,20 +91,20 @@
                     <div id="formAntecedentesContenedor">
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <label class="fw-bold text-secondary small mb-2 text-uppercase">Médicos</label>
-                                <textarea name="Medico" class="form-control" rows="3">{{ $antecedentes->where('tipo', 'Médico')->first()->descripcion ?? '' }}</textarea>
+                                <label class="form-label fw-bold text-secondary small uppercase font-monospace" style="font-size: 0.72rem; letter-spacing: 0.5px;">Médicos</label>
+                                <textarea name="Medico" class="form-control rounded-3" rows="3">{{ $antecedentes->where('tipo', 'Médico')->first()->descripcion ?? '' }}</textarea>
                             </div>
                             <div class="col-md-6">
-                                <label class="fw-bold text-secondary small mb-2 text-uppercase">Quirúrgicos</label>
-                                <textarea name="Quirúrgico" class="form-control" rows="3">{{ $antecedentes->where('tipo', 'Quirúrgico')->first()->descripcion ?? '' }}</textarea>
+                                <label class="form-label fw-bold text-secondary small uppercase font-monospace" style="font-size: 0.72rem; letter-spacing: 0.5px;">Quirúrgicos</label>
+                                <textarea name="Quirúrgico" class="form-control rounded-3" rows="3">{{ $antecedentes->where('tipo', 'Quirúrgico')->first()->descripcion ?? '' }}</textarea>
                             </div>
                             <div class="col-md-6">
-                                <label class="fw-bold text-danger small mb-2 text-uppercase">Alergias</label>
-                                <textarea name="Alergia" class="form-control border-danger-subtle" rows="3">{{ $antecedentes->where('tipo', 'Alergia')->first()->descripcion ?? '' }}</textarea>
+                                <label class="form-label fw-bold text-danger small uppercase font-monospace" style="font-size: 0.72rem; letter-spacing: 0.5px;">Alergias</label>
+                                <textarea name="Alergia" class="form-control border-danger-subtle rounded-3" rows="3">{{ $antecedentes->where('tipo', 'Alergia')->first()->descripcion ?? '' }}</textarea>
                             </div>
                             <div class="col-md-6">
-                                <label class="fw-bold text-success small mb-2 text-uppercase">Medicación Habitual</label>
-                                <textarea name="Medicación" class="form-control border-success-subtle" rows="3">{{ $antecedentes->where('tipo', 'Medicación')->first()->descripcion ?? '' }}</textarea>
+                                <label class="form-label fw-bold text-success small uppercase font-monospace" style="font-size: 0.72rem; letter-spacing: 0.5px;">Medicación Habitual</label>
+                                <textarea name="Medicación" class="form-control border-success-subtle rounded-3" rows="3">{{ $antecedentes->where('tipo', 'Medicación')->first()->descripcion ?? '' }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -108,19 +113,19 @@
 
             {{-- PESTAÑA HISTORIA CLÍNICA --}}
             <div class="tab-pane fade" id="consulta" role="tabpanel">
-                <div class="row">
+                <div class="row g-3">
                     <div class="col-md-3">
-                        <div class="card border-0 shadow-sm bg-light mb-3">
-                            <div class="card-header bg-white fw-bold small text-muted text-uppercase">Referencia Histórica</div>
+                        <div class="card border-0 shadow-sm bg-white rounded-4 overflow-hidden border">
+                            <div class="card-header bg-white border-bottom fw-bold font-monospace uppercase text-secondary py-2.5 px-3" style="font-size: 0.72rem; letter-spacing: 0.5px;">Referencia Histórica</div>
                             <div class="card-body p-0">
-                                <ul class="list-group list-group-flush small" id="lista-referencia">
+                                <ul class="list-group list-group-flush small font-monospace" id="lista-referencia">
                                     @forelse($antecedentes as $ant)
-                                        <li class="list-group-item bg-transparent py-2 border-bottom">
-                                            <strong class="text-primary d-block small">{{ strtoupper($ant->tipo) }}</strong>
-                                            <span>{{ $ant->descripcion }}</span>
+                                        <li class="list-group-item bg-transparent py-2.5 px-3 border-0 border-bottom border-light">
+                                            <strong class="text-primary d-block uppercase mb-0.5" style="font-size: 0.72rem;">{{ $ant->tipo }}</strong>
+                                            <span class="text-secondary fw-medium">{{ $ant->descripcion }}</span>
                                         </li>
                                     @empty
-                                        <li class="list-group-item bg-transparent text-muted fst-italic">Sin registros.</li>
+                                        <li class="list-group-item bg-transparent text-muted fst-italic p-3 text-center small">Sin registros previos.</li>
                                     @endforelse
                                 </ul>
                             </div>
@@ -128,16 +133,20 @@
                     </div>
 
                     <div class="col-md-9">
-                        <div class="card border-0 shadow-sm p-4">
-                            <label class="fw-bold text-secondary small mb-2 text-uppercase">Anamnesis</label>
-                            <textarea name="anamnesis" class="form-control mb-3" rows="4" required>{{ old('anamnesis', $historia->anamnesis) }}</textarea>
+                        <div class="card border-0 shadow-sm p-4 rounded-4" style="background: #ffffff;">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary small uppercase font-monospace" style="font-size: 0.72rem; letter-spacing: 0.5px;">Anamnesis</label>
+                                <textarea name="anamnesis" class="form-control rounded-3" rows="4" required>{{ old('anamnesis', $historia->anamnesis) }}</textarea>
+                            </div>
                             
-                            <label class="fw-bold text-secondary small mb-2 text-uppercase">Examen Físico</label>
-                            <textarea name="examen_fisico" class="form-control mb-3" rows="4">{{ old('examen_fisico', $historia->examen_fisico) }}</textarea>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-secondary small uppercase font-monospace" style="font-size: 0.72rem; letter-spacing: 0.5px;">Examen Físico</label>
+                                <textarea name="examen_fisico" class="form-control rounded-3" rows="4">{{ old('examen_fisico', $historia->examen_fisico) }}</textarea>
+                            </div>
                             
-                            {{-- SECCIÓN DE DIAGNÓSTICOS MÚLTIPLES CARGADOS CON COMPONENTES --}}
+                            {{-- DIAGNÓSTICOS MÚLTIPLES EXISTENTES / NUEVOS --}}
                             <div id="diagnosticos-container">
-                                <label class="fw-bold text-secondary small mb-2 text-uppercase d-block">Diagnósticos de la Atención</label>
+                                <label class="form-label fw-bold text-secondary small uppercase font-monospace mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px;">Diagnósticos de la Atención</label>
                                 
                                 @forelse($historia->diagnosticos as $index => $diag)
                                     <div class="row g-2 mb-3 diagnostico-row align-items-end" id="diag-row-{{ $index }}">
@@ -161,9 +170,9 @@
                                                 :uppercase="true"
                                             />
                                         </div>
-                                        <div class="col-md-1 pb-1">
+                                        <div class="col-md-1 pb-1 text-center">
                                             @if($index > 0)
-                                                <button type="button" onclick="eliminarFilaDiagnostico({{ $index }})" class="btn btn-outline-danger border-0">
+                                                <button type="button" onclick="eliminarFilaDiagnostico({{ $index }})" class="btn btn-outline-danger border-0 rounded-circle btn-remove-row">
                                                     <i class="bi bi-x-lg"></i>
                                                 </button>
                                             @endif
@@ -195,13 +204,15 @@
                             </div>
                             
                             <div class="mb-4">
-                                <button type="button" onclick="agregarFilaDiagnostico()" class="btn btn-sm btn-primary fw-bold shadow-sm">
-                                    <i class="bi bi-plus-lg me-1"></i> AÑADIR OTRO DIAGNÓSTICO
+                                <button type="button" onclick="agregarFilaDiagnostico()" class="btn btn-sm btn-outline-primary fw-bold rounded-3 px-3 py-1.5" style="font-size: 0.8rem;">
+                                    <i class="bi bi-plus-circle-fill me-1"></i> AÑADIR OTRO DIAGNÓSTICO
                                 </button>
                             </div>
 
-                            <label class="fw-bold text-secondary small mb-2 text-uppercase">Plan / Tratamiento</label>
-                            <textarea name="plan" class="form-control mb-4" rows="4">{{ old('plan', $historia->plan) }}</textarea>
+                            <div class="mb-0">
+                                <label class="form-label fw-bold text-secondary small uppercase font-monospace" style="font-size: 0.72rem; letter-spacing: 0.5px;">Plan / Tratamiento</label>
+                                <textarea name="plan" class="form-control rounded-3" rows="4" placeholder="Indicaciones médicas generales...">${{ old('plan', $historia->plan) }}</textarea>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -209,8 +220,8 @@
 
             {{-- PESTAÑA RECETA --}}
             <div class="tab-pane fade" id="pestana-receta" role="tabpanel">
-                <div class="card border-0 shadow-sm p-4">
-                    <div class="bg-light p-3 rounded border mb-4">
+                <div class="card border-0 shadow-sm p-4 rounded-4" style="background: #ffffff;">
+                    <div class="bg-light p-3 rounded-4 border mb-4" style="background-color: #f8fafc !important;">
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
                                 <x-custom-search-dropdown 
@@ -243,16 +254,15 @@
                                 />
                             </div>
                         </div>
-                        </div>
 
-                        <div class="row g-3 align-items-end">
+                        <div class="row g-2 align-items-end">
                             <div class="col-md-2">
-                                <label class="small fw-bold text-muted">DOSIS (Cant.)</label>
-                                <input type="number" id="rec_dos" class="form-control calc-trigger" step="0.1">
+                                <label class="form-label small font-monospace fw-bold text-secondary" style="font-size: 0.7rem;">DOSIS (Cant.)</label>
+                                <input type="number" id="rec_dos" class="form-control rounded-3 calc-trigger" step="0.1" style="height: 38px;">
                             </div>
                             <div class="col-md-2">
-                                <label class="small fw-bold text-muted">VÍA</label>
-                                <select id="rec_via" class="form-select">
+                                <label class="form-label small font-monospace fw-bold text-secondary" style="font-size: 0.7rem;">VÍA</label>
+                                <select id="rec_via" class="form-select rounded-3" style="height: 38px;">
                                     <option value="VÍA ORAL">VÍA ORAL</option>
                                     <option value="VÍA ENDOVENOSA">VÍA ENDOVENOSA</option>
                                     <option value="VÍA INTRAMUSCULAR">VÍA INTRAMUSCULAR</option>
@@ -263,10 +273,10 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="small fw-bold text-muted">FRECUENCIA</label>
+                                <label class="form-label small font-monospace fw-bold text-secondary" style="font-size: 0.7rem;">FRECUENCIA</label>
                                 <div class="input-group">
-                                    <input type="number" id="f_n" class="form-control calc-trigger" placeholder="Cada...">
-                                    <select id="f_t" class="form-select calc-trigger">
+                                    <input type="number" id="f_n" class="form-control calc-trigger" placeholder="Cada..." style="height: 38px;">
+                                    <select id="f_t" class="form-select calc-trigger" style="height: 38px;">
                                         <option value="Horas">Horas</option>
                                         <option value="Días">Días</option>
                                         <option value="Dosis Única">Dosis Única</option>
@@ -274,10 +284,10 @@
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <label class="small fw-bold text-muted">DURACIÓN</label>
+                                <label class="form-label small font-monospace fw-bold text-secondary" style="font-size: 0.7rem;">DURACIÓN</label>
                                 <div class="input-group">
-                                    <input type="number" id="d_n" class="form-control calc-trigger" placeholder="Por...">
-                                    <select id="d_t" class="form-select calc-trigger">
+                                    <input type="number" id="d_n" class="form-control calc-trigger" placeholder="Por..." style="height: 38px;">
+                                    <select id="d_t" class="form-select calc-trigger" style="height: 38px;">
                                         <option value="Días">Días</option>
                                         <option value="Semanas">Semanas</option>
                                         <option value="Meses">Meses</option>
@@ -285,38 +295,40 @@
                                 </div>
                             </div>
                             <div class="col-md-2">
-                                <label class="small fw-bold text-primary">CANT. TOTAL</label>
-                                <input type="number" id="rec_total" class="form-control fw-bold border-primary text-center" value="0">
+                                <label class="form-label small font-monospace fw-bold text-primary" style="font-size: 0.7rem;">CANT. TOTAL</label>
+                                <input type="number" id="rec_total" class="form-control fw-black text-center border-primary text-primary" value="0" style="height: 38px; background-color: #f0f4ff;">
                             </div>
                            
                             <div class="col-12 text-end mt-3">
-                                <button type="button" onclick="addMedicamento()" class="btn btn-danger px-5 fw-bold shadow-sm">
+                                <button type="button" onclick="addMedicamento()" class="btn btn-danger px-4 py-2 fw-bold shadow-sm rounded-3 border-0" style="background-color: #e11d48; font-size: 0.88rem;">
                                     <i class="bi bi-plus-lg me-2"></i>AÑADIR A LA RECETA
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <table class="table border align-middle mb-4 shadow-sm">
-                        <thead class="table-dark small text-center">
-                            <tr>
-                                <th class="text-start">Medicamento / Conc.</th>
-                                <th>Presentación</th>
-                                <th>Dosis/Vía</th>
-                                <th>Frecuencia</th>
-                                <th>Duración</th>
-                                <th class="bg-primary text-white">Cant. Total</th>
-                                <th width="5%">X</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listaRecetaVisual"></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table border align-middle mb-4 shadow-sm rounded-3 overflow-hidden">
+                            <thead>
+                                <tr class="table-dark small text-center uppercase font-monospace" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                    <th class="text-start py-2.5 ps-3">Medicamento / Concentración</th>
+                                    <th class="py-2.5">Presentación</th>
+                                    <th class="py-2.5">Dosis/Vía</th>
+                                    <th class="py-2.5">Frecuencia</th>
+                                    <th class="py-2.5">Duración</th>
+                                    <th class="bg-primary text-white py-2.5">Cant. Total</th>
+                                    <th width="5%" class="py-2.5 pe-3">X</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaRecetaVisual"></tbody>
+                        </table>
+                    </div>
 
                     <div id="inputs-receta-ocultos"></div>
 
                     <div class="text-end border-top pt-4">
-                        <button type="submit" class="btn btn-success btn-lg px-5 shadow-lg fw-bold">
-                            <i class="bi bi-save me-2"></i> GUARDAR CAMBIOS Y FINALIZAR
+                        <button type="submit" class="btn btn-success btn-lg px-5 shadow-lg fw-bold rounded-3 border-0">
+                            <i class="bi bi-save-fill me-1.5 small"></i> GUARDAR CAMBIOS Y FINALIZAR
                         </button>
                     </div>
                 </div>
@@ -326,54 +338,51 @@
    
     {{-- ACORDEÓN DE HISTORIAL HISTÓRICO --}}
     <div class="mt-5 mb-5">
-        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history me-2 text-primary"></i>Historial de Atenciones Previas</h5>
-        <div class="accordion shadow-sm" id="historialToggles">
+        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center"><i class="bi bi-clock-history me-2 text-primary"></i>Historial de Atenciones Previas</h5>
+        <div class="accordion shadow-sm rounded-4 overflow-hidden" id="historialToggles">
             @forelse($historiasAnteriores as $hist)
-                <div class="accordion-item border-0 mb-3 shadow-sm rounded overflow-hidden">
+                <div class="accordion-item border-0 mb-2 shadow-sm rounded overflow-hidden" style="border: 1px solid #e2e8f0 !important;">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed bg-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#h{{ $hist->id }}">
+                        <button class="accordion-button collapsed bg-white fw-bold py-3 text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#h{{ $hist->id }}">
                             <div class="d-flex justify-content-between w-100 me-3 align-items-center">
-                                <span><i class="bi bi-calendar-check me-2 text-success"></i>Atención del {{ \Carbon\Carbon::parse($hist->created_at)->format('d/m/Y') }}</span>
-                                
-                                {{-- CORRECCIÓN: Extrae el primer código CIE-10 de la relación de diagnósticos múltiples --}}
-                                <span class="badge bg-light text-primary border border-primary-subtle px-3 py-2">
+                                <span class="fw-bold text-dark"><i class="bi bi-calendar-check me-2 text-success"></i>Atención del {{ \Carbon\Carbon::parse($hist->created_at)->format('d/m/Y') }}</span>
+                                <span class="badge border font-monospace text-primary bg-light-subtle px-3 py-1.5 rounded-2" style="font-size: 0.78rem;">
                                     CIE-10: {{ $hist->diagnosticos->first() ? $hist->diagnosticos->first()->cie_10 : 'N/A' }}
                                 </span>
                             </div>
                         </button>
                     </h2>
                     <div id="h{{ $hist->id }}" class="accordion-collapse collapse">
-                        <div class="accordion-body bg-white border-top">
-                            <div class="row mb-4">
-                                <div class="col-md-6 border-end">
-                                    <h6 class="fw-bold text-muted small text-uppercase mb-2">Anamnesis / Examen</h6>
-                                    <div class="p-2 bg-light rounded border-start border-4 border-info mb-2">
-                                        <p class="small text-dark mb-0">{{ $hist->anamnesis }}</p>
+                        <div class="accordion-body bg-white border-top border-light p-4">
+                            <div class="row g-4">
+                                <div class="col-md-6 border-end-md">
+                                    <h6 class="fw-bold font-monospace text-secondary small text-uppercase mb-2.5" style="font-size: 0.72rem; letter-spacing: 0.5px;">Anamnesis / Examen Físico</h6>
+                                    <div class="p-3 bg-light rounded-3 border-start border-4 border-info mb-3">
+                                        <small class="d-block text-muted font-monospace uppercase fw-bold mb-1" style="font-size: 0.65rem;">Anamnesis narrada</small>
+                                        <p class="small text-dark mb-0 fw-medium">{{ $hist->anamnesis }}</p>
                                     </div>
-                                    <div class="p-2 bg-light rounded border-start border-4 border-secondary">
-                                        <p class="small text-dark mb-0">{{ $hist->examen_fisico }}</p>
+                                    <div class="p-3 bg-light rounded-3 border-start border-4 border-secondary">
+                                        <small class="d-block text-muted font-monospace uppercase fw-bold mb-1" style="font-size: 0.65rem;">Examen exploratorio</small>
+                                        <p class="small text-dark mb-0 fw-medium">{{ $hist->examen_fisico }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6 ps-md-4">
-                                    <h6 class="fw-bold text-muted small text-uppercase mb-2">Diagnóstico y Plan</h6>
-                                    
-                                    {{-- CORRECCIÓN: Itera y muestra de forma estética todos los diagnósticos registrados en esta atención --}}
-                                    <div class="mb-2">
+                                    <h6 class="fw-bold font-monospace text-secondary small text-uppercase mb-2.5" style="font-size: 0.72rem; letter-spacing: 0.5px;">Diagnóstico y Plan de Trabajo</h6>
+                                    <div class="mb-3">
                                         @if($hist->diagnosticos->count() > 0)
                                             @foreach($hist->diagnosticos as $d)
-                                                <p class="fw-bold text-primary mb-1">
-                                                    <i class="bi bi-patch-check-fill me-1 text-success"></i> 
-                                                    {{ $d->diagnostico }} <span class="text-secondary font-monospace">({{ $d->cie_10 }})</span>
+                                                <p class="fw-bold text-primary mb-2" style="font-size: 0.95rem;">
+                                                    <i class="bi bi-patch-check-fill me-1.5 text-success"></i> 
+                                                    {{ $d->diagnostico }} <span class="text-secondary font-monospace opacity-75">({{ $d->cie_10 }})</span>
                                                 </p>
                                             @endforeach
                                         @else
                                             <p class="text-muted small fst-italic">Sin diagnósticos especificados.</p>
                                         @endif
                                     </div>
-                                    
-                                    <div class="p-2 bg-light rounded border small text-dark">
-                                        <strong>Plan de Tratamiento:</strong><br>
-                                        {{ $hist->plan }}
+                                    <div class="p-3 bg-light rounded-3 border border-light-subtle text-dark">
+                                        <small class="d-block text-muted font-monospace uppercase fw-bold mb-1" style="font-size: 0.65rem;">Plan farmacológico / Terapéutico</small>
+                                        <span class="small fw-medium">{{ $hist->plan }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -381,8 +390,30 @@
                     </div>
                 </div>
             @empty
-                <div class="text-muted p-3 border rounded bg-light text-center small">El paciente no registra consultas previas en el sistema.</div>
+                <div class="text-muted p-4 border rounded-4 bg-white text-center small fw-medium text-secondary">El paciente no registra consultas previas en el sistema.</div>
             @endforelse
+        </div>
+    </div>
+
+    {{-- MODAL ADVERTENCIA DE SALIDA --}}
+    <div class="modal fade" id="modalConfirmarSalida" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-warning-subtle border-0 py-3">
+                    <h5 class="modal-title fw-bold text-warning-emphasis d-flex align-items-center" style="font-size: 1.1rem;">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i> Cambios sin guardar
+                    </h5>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="mb-0 text-dark fw-semibold" style="font-size: 0.92rem; line-height: 1.5;">
+                        ⚠️ Detectamos que has modificado la atención actual pero no has guardado los cambios. ¿Estás seguro de que deseas salir? Perderás toda la información ingresada.
+                    </p>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 bg-light p-2.5 rounded-bottom-4">
+                    <button type="button" class="btn btn-light rounded-3 fw-bold text-secondary px-3 py-2 small" data-bs-dismiss="modal" style="font-size: 0.85rem;">Permanecer aquí</button>
+                    <a href="#" id="btnConfirmarSalidaURL" class="btn btn-warning rounded-3 fw-bold px-4 py-2 shadow-sm text-dark" style="font-size: 0.85rem;">Salir sin guardar</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -397,24 +428,19 @@
     let formChanged = false;
     let recIdx = 0;
 
-    // --- 1. GESTIÓN DE DIAGNÓSTICOS MÚLTIPLES CON COMPONENTES ESTÉTICOS ---
-    // DIFERENCIA CLAVE: Cuenta los registros guardados previos para no solapar IDs
     let diagCounter = {{ $historia->diagnosticos->count() > 0 ? $historia->diagnosticos->count() : 1 }};
     const baseCie = @json($cie10Lista);
     const baseMedicamentos = @json($medicamentosLista);
 
-    // Mapeo estructurado de las opciones para alimentar las filas creadas dinámicamente por JS
     const opcionesDiagnostico = baseCie.map(c => ({ id: c.descripcion, nombre: `${c.descripcion} — ${c.codigo}` }));
     const opcionesCie = baseCie.map(c => ({ id: c.codigo, nombre: `${c.codigo} — ${c.descripcion}` }));
 
-    // CARGA INICIAL: Recetas existentes + inicialización de dropdowns previos
     document.addEventListener('DOMContentLoaded', function() {
         const recetasExistentes = @json($cita->recetas);
         recetasExistentes.forEach(r => {
             injectReceta(r.medicamento, r.concentracion, r.presentacion, r.dosis, r.via_administracion, r.frecuencia, r.duracion, r.cantidad_total);
         });
 
-        // Inicializar los que ya venían impresos desde la base de datos
         @foreach($historia->diagnosticos as $idx => $d)
             if(typeof window.initSingleCustomDropdown === 'function') {
                 window.initSingleCustomDropdown('diag_select_{{ $idx }}');
@@ -460,8 +486,8 @@
                     <ul id="cie_select_${diagCounter}_list" class="d-none position-absolute start-0 w-100 dropdown-menu-floating shadow-lg border rounded-3 p-0 m-0 overflow-auto" style="max-height: 240px; z-index: 1050; background: #ffffff; list-style: none;">${generarHtmlOpciones(opcionesCie)}</ul>
                 </div>
             </div>
-            <div class="col-md-1 pb-1">
-                <button type="button" onclick="eliminarFilaDiagnostico(${diagCounter})" class="btn btn-outline-danger border-0">
+            <div class="col-md-1 pb-1 text-center">
+                <button type="button" onclick="eliminarFilaDiagnostico(${diagCounter})" class="btn btn-outline-danger border-0 rounded-circle btn-remove-row">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
@@ -482,16 +508,12 @@
         if(row) row.remove();
     }
 
-    // --- CORRECCIÓN DE SINCRONIZACIÓN EN CASMÉDICA SIN RECURSIVIDAD EN DIAGNÓSTICOS ---
     document.getElementById('diagnosticos-container').addEventListener('change', function(e) {
         if (!e.target.classList.contains('real-hidden-value')) return;
-
         const row = e.target.closest('.diagnostico-row');
         if (!row) return;
-
         const inputDiagHidden = row.querySelector('[id^="diag_select_"][id$="_value"]');
         const inputCieHidden = row.querySelector('[id^="cie_select_"][id$="_value"]');
-        
         if (!e.target.value) return;
 
         if (e.target.id.startsWith('cie_select_')) {
@@ -525,7 +547,6 @@
         });
     }
 
-    // --- 2. GESTIÓN DE RECETAS CON NUEVO DISEÑO (FILTRADO Y CASCADA AISLADA) ---
     if (typeof window.initSingleCustomDropdown === 'function') {
         window.initSingleCustomDropdown('rec_med_select');
         window.initSingleCustomDropdown('rec_conc_select');
@@ -543,15 +564,12 @@
     function actualizarConcentraciones(medNombre) {
         const val = medNombre.trim().toLowerCase();
         const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase() === val);
-        
         listConc.innerHTML = ''; listPres.innerHTML = '';
         inputConcHidden.value = ''; inputConcVisible.value = '';
         inputPresHidden.value = ''; inputPresVisible.value = '';
-        
         if (filtrados.length > 0) {
             const concentracionesUnicas = [...new Set(filtrados.map(m => m.concentracion))].filter(Boolean);
             listConc.innerHTML = generarHtmlOpciones(concentracionesUnicas.map(c => ({ id: c, nombre: c })));
-            
             if (concentracionesUnicas.length === 1) {
                 inputConcHidden.value = concentracionesUnicas[0];
                 inputConcVisible.value = concentracionesUnicas[0];
@@ -564,13 +582,10 @@
         const medVal = medNombre.trim().toLowerCase();
         const concVal = concNombre.trim().toLowerCase();
         const filtrados = baseMedicamentos.filter(m => m.nombre.toLowerCase() === medVal && m.concentracion.toLowerCase() === concVal);
-        
         listPres.innerHTML = ''; inputPresHidden.value = ''; inputPresVisible.value = '';
-        
         if (filtrados.length > 0) {
             const presentacionesUnicas = [...new Set(filtrados.map(m => m.presentacion))].filter(Boolean);
             listPres.innerHTML = generarHtmlOpciones(presentacionesUnicas.map(p => ({ id: p, nombre: p })));
-            
             if (presentacionesUnicas.length === 1) {
                 inputPresHidden.value = presentacionesUnicas[0];
                 inputPresVisible.value = presentacionesUnicas[0];
@@ -583,15 +598,11 @@
         const medVal = medNombre.trim().toLowerCase();
         const concVal = concNombre.trim().toLowerCase();
         const presVal = presNombre.trim().toLowerCase();
-
-        const medExacto = baseMedicamentos.find(m => 
-            m.nombre.toLowerCase() === medVal && m.concentracion.toLowerCase() === concVal && m.presentacion.toLowerCase() === presVal
-        );
+        const medExacto = baseMedicamentos.find(m => m.nombre.toLowerCase() === medVal && m.concentracion.toLowerCase() === concVal && m.presentacion.toLowerCase() === presVal);
 
         if (medExacto) {
             if (medExacto.dosis) document.getElementById('rec_dos').value = medExacto.dosis;
             if (medExacto.via_administracion) document.getElementById('rec_via').value = medExacto.via_administracion;
-            
             if (medExacto.frecuencia) {
                 if (medExacto.frecuencia === 'Dosis Única') {
                     document.getElementById('f_t').value = 'Dosis Única';
@@ -603,7 +614,6 @@
                     }
                 }
             }
-            
             if (medExacto.duracion) {
                 const datosDuracion = separarNumeroYTexto(medExacto.duracion);
                 if (datosDuracion) {
@@ -613,47 +623,27 @@
             } else if (medExacto.frecuencia === 'Dosis Única') {
                 document.getElementById('d_n').value = '';
             }
-            
-            // 🔄 SOLUCIÓN: Forzamos la asignación directa del valor maestro registrado en la base de datos
             if (medExacto.cantidad_total) {
                 document.getElementById('rec_total').value = medExacto.cantidad_total;
             }
-            
             configurarVisibilidadCampos();
         }
     }
 
-    inputMedHidden.addEventListener('change', function() {
-        actualizarConcentraciones(this.value);
-    });
+    inputMedHidden.addEventListener('change', function() { actualizarConcentraciones(this.value); });
+    inputConcHidden.addEventListener('change', function() { actualizarPresentaciones(inputMedHidden.value, this.value); });
+    inputPresHidden.addEventListener('change', function() { procesarMedicamentoExacto(inputMedHidden.value, inputConcHidden.value, this.value); });
 
-    inputConcHidden.addEventListener('change', function() {
-        actualizarPresentaciones(inputMedHidden.value, this.value);
-    });
-
-    inputPresHidden.addEventListener('change', function() {
-        procesarMedicamentoExacto(inputMedHidden.value, inputConcHidden.value, this.value);
-    });
-
-    // 🔄 PLURALIZACIÓN INTELIGENTE: Sincroniza cadenas singulares con los selectores del DOM
     function separarNumeroYTexto(stringOriginal) {
         if (!stringOriginal) return null;
         const matches = stringOriginal.trim().match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
         if (matches && matches.length === 3) {
             let unidadTexto = matches[2].trim().toLowerCase();
-            
-            if (unidadTexto === 'mes' || unidadTexto === 'meses') {
-                unidadTexto = 'Meses';
-            } else if (unidadTexto === 'día' || unidadTexto === 'dia' || unidadTexto === 'días' || unidadTexto === 'dias') {
-                unidadTexto = 'Días';
-            } else if (unidadTexto === 'semana' || unidadTexto === 'semanas') {
-                unidadTexto = 'Semanas';
-            } else if (unidadTexto === 'hora' || unidadTexto === 'horas') {
-                unidadTexto = 'Horas';
-            } else {
-                unidadTexto = unidadTexto.charAt(0).toUpperCase() + unidadTexto.slice(1);
-            }
-
+            if (unidadTexto === 'mes' || unidadTexto === 'meses') unidadTexto = 'Meses';
+            else if (unidadTexto === 'día' || unidadTexto === 'dia' || unidadTexto === 'días' || unidadTexto === 'dias') unidadTexto = 'Días';
+            else if (unidadTexto === 'semana' || unidadTexto === 'semanas') unidadTexto = 'Semanas';
+            else if (unidadTexto === 'hora' || unidadTexto === 'horas') unidadTexto = 'Horas';
+            else unidadTexto = unidadTexto.charAt(0).toUpperCase() + unidadTexto.slice(1);
             return { numero: matches[1], text: unidadTexto };
         }
         return null;
@@ -661,9 +651,9 @@
 
     function injectReceta(med, conc, pres, dos, via, freq, dur, total) {
         const fila = `<tr id="fila_${recIdx}" class="align-middle text-center">
-            <td class="text-start"><strong>${med}</strong><br><span class="badge bg-secondary">${conc}</span></td>
+            <td class="text-start ps-3"><strong>${med}</strong><br><span class="badge bg-secondary">${conc}</span></td>
             <td><small>${pres}</small></td><td>${dos} - ${via}</td><td>${freq}</td><td>${dur}</td><td class="fw-bold text-primary">${total}</td>
-            <td><button type="button" onclick="removeMed(${recIdx})" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-x-lg"></i></button></td></tr>`;
+            <td class="pe-3"><button type="button" onclick="removeMed(${recIdx})" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-x-lg"></i></button></td></tr>`;
         document.getElementById('listaRecetaVisual').insertAdjacentHTML('beforeend', fila);
 
         const hiddens = `<div id="hidden_${recIdx}">
@@ -686,7 +676,6 @@
         const dos = document.getElementById('rec_dos').value;
         const via = document.getElementById('rec_via').value;
         const f_tipo = document.getElementById('f_t').value;
-        
         let freq = f_tipo === 'Dosis Única' ? 'Dosis Única' : document.getElementById('f_n').value + ' ' + f_tipo;
         let dur = f_tipo === 'Dosis Única' ? 'N/A' : document.getElementById('d_n').value + ' ' + document.getElementById('d_t').value;
         const total = document.getElementById('rec_total').value;
@@ -694,7 +683,6 @@
         if(!med || !dos || !via || !pres || total <= 0) {
             return alert("❌ Error: Faltan completar campos obligatorios del fármaco.");
         }
-
         injectReceta(med, conc, pres, dos, via, freq, dur, total);
         ['rec_dos','f_n','d_n'].forEach(id => document.getElementById(id).value = '');
         inputMedHidden.value = ''; document.getElementById('rec_med_select_input').value = '';
@@ -715,7 +703,6 @@
         const f_numInput = document.getElementById('f_n');
         const d_numInput = document.getElementById('d_n');
         const d_tipoSelect = document.getElementById('d_t');
-
         if (f_tipoSelect.value === 'Dosis Única') {
             f_numInput.value = ""; f_numInput.disabled = true; f_numInput.placeholder = "N/A";
             d_numInput.value = ""; d_numInput.disabled = true; d_numInput.placeholder = "N/A";
@@ -743,7 +730,6 @@
             const f_tipo = f_tipoSelect.value;
             const d_num = parseFloat(d_numInput.value) || 0;
             const d_tipo = d_tipoSelect.value;
-
             if (dosis > 0 && f_num > 0 && d_num > 0) {
                 let tomasAlDia = (f_tipo === 'Horas') ? (24 / f_num) : (1 / f_num);
                 let diasTotales = d_num;
@@ -753,82 +739,74 @@
             }
         }
     }
-    
-    // 🔄 SOLUCIÓN: Separamos la validación de visibilidad y el cálculo automático.
-    // El trigger matemático de cálculo automático SOLO se ejecuta en inputs manuales,
-    // dejando intacto el valor maestro de rec_total cuando se selecciona el fármaco.
+
     document.querySelectorAll('.calc-trigger').forEach(el => {
-        el.addEventListener('input', function() {
-            configurarVisibilidadCampos();
-            calcularCantidadTotal();
-        });
-        el.addEventListener('change', function() {
-            configurarVisibilidadCampos();
-            calcularCantidadTotal();
-        });
+        el.addEventListener('input', function() { configurarVisibilidadCampos(); calcularCantidadTotal(); });
+        el.addEventListener('change', function() { configurarVisibilidadCampos(); calcularCantidadTotal(); });
     });
-
-    // --- 3. GUARDAR / ACTUALIZAR ANTECEDENTES MANUAL CON RESET DE ADVERTENCIA ---
-    async function guardarAntecedentesManual(event) {
-        const statusLabel = document.getElementById('save-status');
-        const btn = event.currentTarget;
-        const pacienteId = document.getElementById('paciente_id_global').value;
-        if (!pacienteId) return alert("Error: No se encontró el ID del paciente.");
-
-        const textoMedico = document.querySelector('textarea[name="Medico"]').value.trim();
-        const textoQuirurgico = document.querySelector('textarea[name="Quirúrgico"]').value.trim();
-        const textoAlergia = document.querySelector('textarea[name="Alergia"]').value.trim();
-        const textoMedicacion = document.querySelector('textarea[name="Medicación"]').value.trim();
-
-        btn.disabled = true;
-        statusLabel.className = 'text-muted';
-        statusLabel.innerHTML = '<i class="bi bi-arrow-repeat spinner-border spinner-border-sm me-1"></i>Guardando...';
-        
-        try {
-            const response = await fetch("{{ route('antecedentes.guardar_todo') }}", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
-                body: JSON.stringify({ paciente_id: pacienteId, Medico: textoMedico, Quirúrgico: textoQuirurgico, Alergia: textoAlergia, Medicación: textoMedicacion })
-            });
-            const result = await response.json();
-            if (response.ok && result.status === 'success') {
-                statusLabel.className = 'text-success fw-bold';
-                statusLabel.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardado correctamente';
-                const listaReferencia = document.getElementById('lista-referencia');
-                if (listaReferencia) {
-                    let nuevoHtml = '';
-                    if (textoMedico) nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-bottom"><strong class="text-primary d-block small">MÉDICO</strong><span>${textoMedico}</span></li>`;
-                    if (textoQuirurgico) nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-bottom"><strong class="text-primary d-block small">QUIRÚRGICO</strong><span>${textoQuirurgico}</span></li>`;
-                    if (textoAlergia) nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-bottom"><strong class="text-danger d-block small">ALERGIA</strong><span>${textoAlergia}</span></li>`;
-                    if (textoMedicacion) nuevoHtml += `<li class="list-group-item bg-transparent py-2 border-bottom"><strong class="text-success d-block small">MEDICACIÓN</strong><span>${textoMedicacion}</span></li>`;
-                    listaReferencia.innerHTML = nuevoHtml || '<li class="list-group-item bg-transparent text-muted fst-italic">Sin registros previos.</li>';
-                }
-                formChanged = false;
-                setTimeout(() => { statusLabel.innerHTML = ''; }, 3000);
-            }
-        } catch (error) {
-            statusLabel.className = 'text-danger fw-bold';
-            statusLabel.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>Error al guardar`;
-        } finally { btn.disabled = false; }
-    }
 
     const atencionForm = document.getElementById('formAtencionMedica');
+    const btnConfirmarSalidaURL = document.getElementById('btnConfirmarSalidaURL');
+    let modalSalidaInstance = null;
+
     atencionForm.addEventListener('input', () => { formChanged = true; });
-    document.addEventListener('click', function (e) {
-        const target = e.target.closest('a');
-        if (formChanged && target && target.href && !target.hasAttribute('data-bs-toggle')) {
-            if (!confirm("⚠️ No se han guardado los cambios de la atención actual. ¿Desea salir sin guardar?")) e.preventDefault();
+    atencionForm.addEventListener('change', () => { formChanged = true; });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const modalSalidaElement = document.getElementById('modalConfirmarSalida');
+        if (modalSalidaElement && typeof bootstrap !== 'undefined') {
+            modalSalidaInstance = new bootstrap.Modal(modalSalidaElement);
         }
+        document.addEventListener('click', function (e) {
+            const target = e.target.closest('a');
+            if (target && target.href && formChanged) {
+                const href = target.getAttribute('href');
+                if (href === '#' || href.startsWith('#') || target.hasAttribute('data-bs-toggle') || target.hasAttribute('data-bs-dismiss')) return;
+                e.preventDefault();
+                if (btnConfirmarSalidaURL) btnConfirmarSalidaURL.setAttribute('href', target.href);
+                if (modalSalidaInstance) modalSalidaInstance.show();
+                else if (confirm("⚠️ Cambios sin guardar. ¿Deseas salir?")) window.location.href = target.href;
+            }
+        });
     });
-    window.addEventListener('beforeunload', function (e) { if (formChanged) { e.preventDefault(); e.returnValue = ''; } });
+
     atencionForm.addEventListener('submit', () => { formChanged = false; });
+    if (btnConfirmarSalidaURL) btnConfirmarSalidaURL.addEventListener('click', () => { formChanged = false; });
+    window.addEventListener('beforeunload', function (e) { if (formChanged) { e.preventDefault(); e.returnValue = ''; } });
 </script>
 
 <style>
-    .nav-tabs .nav-link { color: #6c757d; border: none; border-bottom: 3px solid transparent; transition: all 0.3s ease; padding: 12px 25px; border-radius: 8px 8px 0 0; }
-    .nav-tabs .nav-link.active { color: #ffffff !important; background-color: #2c3e50 !important; border-bottom: 3px solid #1a252f; }
-    .nav-tabs .nav-link#receta-tab.active { background-color: #c0392b !important; }
-    textarea.form-control { resize: none; border-radius: 8px; }
-    .btn-outline-danger.rounded-circle { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; padding: 0; }
+    .fw-black { font-weight: 900; }
+    .uppercase { text-transform: uppercase; }
+    .transition-row-normal { transition: all 0.2s ease; }
+    .transition-row-normal:hover { opacity: 0.85; }
+
+    .nav-tabs .nav-link { 
+        color: #64748b; 
+        border: 1px solid #e2e8f0; 
+        background-color: #ffffff;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        padding: 10px 24px; 
+        font-size: 0.88rem;
+    }
+    .nav-tabs .nav-link:hover { background-color: #f1f5f9; color: #0f172a; }
+    .nav-tabs .nav-link.active { 
+        color: #ffffff !important; 
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%) !important;
+        box-shadow: 0 4px 12px rgba(78, 115, 223, 0.25);
+    }
+    .nav-tabs .nav-link#receta-tab.active { 
+        background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important; 
+        box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
+    }
+    
+    textarea.form-control { resize: none; border-radius: 8px; border: 1px solid #cbd5e1; }
+    textarea.form-control:focus { border-color: #86b7fe; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); }
+
+    .btn-remove-row { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+    
+    @media(min-width: 768px) {
+        .border-end-md { border-right: 1px solid #e2e8f0 !important; }
+    }
 </style>
 @endsection

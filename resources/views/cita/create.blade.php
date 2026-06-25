@@ -1,81 +1,113 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
-    {{-- Bloque Superior de Título y Botones --}}
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0 text-primary fw-bold"><i class="bi bi-calendar-plus me-2"></i>Nueva Cita Médica</h5>
+<div class="container-fluid p-0">
+    {{-- Botón Regresar Limpio --}}
+    <div class="mb-3">
+        <a href="{{ route('dashboard') }}" class="btn btn-link text-decoration-none text-secondary fw-bold ps-0 transition-row-normal d-inline-flex align-items-center" style="font-size: 0.88rem;">
+            <i class="bi bi-arrow-left me-2 fs-5"></i>REGRESAR AL CALENDARIO
+        </a>
+    </div>
+
+    {{-- ENCABEZADO VIBRANTE COMPACTO --}}
+    <div class="card border-0 rounded-4 shadow-sm mb-4 overflow-hidden text-white" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+        <div class="card-body py-3.5 px-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="p-2.5 bg-white-50 rounded-3 text-white" style="background: rgba(255,255,255,0.15);">
+                    <i class="bi bi-calendar-plus-fill fs-3"></i>
+                </div>
+                <div>
+                    <h2 class="fw-black text-uppercase m-0 tracking-tight" style="font-size: 1.6rem; letter-spacing: -0.5px; font-weight: 900;">Nueva Cita Médica</h2>
+                    <p class="m-0 small opacity-75 fw-medium">Asignación de turnos, horarios y motivos de consulta diarios.</p>
+                </div>
+            </div>
         </div>
+    </div>
+
+    {{-- CARD PRINCIPAL DEL FORMULARIO --}}
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="background: #ffffff;">
+        <div class="card-header bg-white py-3 border-bottom border-light">
+            <h5 class="mb-0 fw-bold text-dark d-flex align-items-center">
+                <i class="bi bi-search-heart text-primary me-2"></i> 1. Selección de Paciente
+            </h5>
+        </div>
+        
         <div class="card-body p-4">
-            <form action="{{ route('citas.store') }}" method="POST" autocomplete="off">
+            <form action="{{ route('citas.store') }}" method="POST" autocomplete="off" class="m-0">
                 @csrf
                 
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">1. Buscar por Apellidos (mín. 2 letras)</label>
-                        <div class="input-group mb-2">
-                            <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
-                            <input type="text" id="buscarApellido" class="form-control form-control-lg" placeholder="Escriba apellido...">
+                {{-- SECCIÓN DE BÚSQUEDA DINÁMICA --}}
+                <div class="row g-3 mb-3.5">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Buscar por Apellidos (mín. 2 letras)</label>
+                        <div class="position-relative w-100">
+                            <i class="bi bi-search position-absolute text-muted" style="left: 14px; top: 50%; transform: translateY(-50%);"></i>
+                            <input type="text" id="buscarApellido" class="form-control rounded-3 py-2" placeholder="Escriba apellido paterno o materno..." style="padding-left: 40px; border: 1px solid #cbd5e1; font-size: 0.95rem;">
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">2. Buscar por DNI (mín. 3 números)</label>
-                        <div class="input-group mb-2">
-                            <span class="input-group-text bg-light"><i class="bi bi-card-text"></i></span>
-                            <input type="text" id="buscarDNI" class="form-control form-control-lg" placeholder="Escriba DNI...">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Buscar por DNI (mín. 3 números)</label>
+                        <div class="position-relative w-100">
+                            <i class="bi bi-card-text position-absolute text-muted" style="left: 14px; top: 50%; transform: translateY(-50%);"></i>
+                            <input type="text" id="buscarDNI" maxlength="8" class="form-control rounded-3 py-2 font-monospace fw-semibold" placeholder="Escriba número de documento..." style="padding-left: 40px; border: 1px solid #cbd5e1; font-size: 0.95rem;">
                         </div>
                     </div>
                 </div>
 
+                {{-- VISOR DE RESULTADOS INTERACTIVOS --}}
                 <div class="mb-4">
-                    <label class="form-label fw-bold">Paciente Seleccionado</label>
-                    <select name="paciente_id" id="selectPaciente" class="form-select border-primary" required size="5">
-                        <option value="" disabled selected>Resultados de búsqueda...</option>
+                    <label class="form-label font-monospace uppercase fw-bold text-dark-subtle" style="font-size: 0.72rem; letter-spacing: 0.5px;">Resultados del Directorio</label>
+                    <select name="paciente_id" id="selectPaciente" class="form-select rounded-3 border" required size="5" style="border-color: #cbd5e1 !important;">
+                        <option value="" disabled selected class="text-muted italic select-placeholder-custom">Utiliza los filtros de arriba para desplegar pacientes coincidentes...</option>
                         @foreach($pacientes as $p)
                             <option value="{{ $p->id }}" 
                                     data-apellido="{{ strtolower($p->apellido) }}" 
                                     data-dni="{{ $p->dni }}" 
-                                    style="display: none;">
-                                {{ strtoupper($p->apellido) }}, {{ $p->nombre }} (DNI: {{ $p->dni }})
+                                    style="display: none;" class="font-semibold text-dark">
+                                {{ strtoupper($p->apellido) }}, {{ $p->nombre }} — DNI: {{ $p->dni ?? 'N/R' }}
                             </option>
                         @endforeach
                     </select>
-                    <div id="statusBusqueda" class="form-text mt-2 fw-medium text-muted">
-                        Ingrese datos para filtrar.
+                    <div id="statusBusqueda" class="form-text mt-2 font-monospace small fw-bold text-muted">
+                        <i class="bi bi-info-circle"></i> Ingrese datos filiatorios para indexar el expediente.
                     </div>
                 </div>
 
-                <hr class="my-4">
+                {{-- SECCIÓN 2: PARAMETRIZACIÓN DE LA CITA --}}
+                <h5 class="text-dark fw-bold border-bottom pb-2 mt-4.5 mb-3.5 d-flex align-items-center" style="font-size: 1.05rem;">
+                    <i class="bi bi-clock-history text-primary me-2 fs-5"></i> 2. Horario y Motivo Médico
+                </h5>
 
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Fecha de Cita</label>
-                        <input type="date" name="fecha" class="form-control" value="{{ date('Y-m-d') }}" required>
+                <div class="row g-3 mb-4.5">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Fecha de Cita</label>
+                        <input type="date" name="fecha" class="form-control rounded-3 py-2 font-monospace fw-semibold" value="{{ date('Y-m-d') }}" required style="font-size: 0.92rem; height: 38px;">
                     </div>
                     
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Hora</label>
-                        <input type="time" name="hora" id="inputHora" class="form-control" 
-                            step="60"
-                            value="{{ request('hora_redondeada') ?? (request('quick_start') ? date('H:i') : '') }}" 
-                            required>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Hora Programada</label>
+                        <input type="time" name="hora" id="inputHora" class="form-control rounded-3 py-2 font-monospace fw-semibold" 
+                               step="60"
+                               value="{{ request('hora_redondeada') ?? (request('quick_start') ? date('H:i') : '') }}" 
+                               required style="font-size: 0.92rem; height: 38px;">
                     </div>
                     
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Motivo de Cita</label>
-                        <select name="motivo" id="motivoCita" class="form-select" required>
-                            <option value="Control" selected>Control</option>
-                            <option value="Paciente nuevo">Paciente nuevo</option>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Motivo Clínico de Consulta</label>
+                        <select name="motivo" id="motivoCita" class="form-select rounded-3 h-auto py-2 fw-semibold" required style="font-size: 0.92rem; height: 38px;">
+                            <option value="Control" selected>Control Periódico</option>
+                            <option value="Paciente nuevo">Paciente Nuevo / Primera Consulta</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="mt-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary px-5 py-2 shadow-sm">
-                        <i class="bi bi-check-circle me-1"></i> Guardar Cita
+                {{-- ACCIONES --}}
+                <div class="pt-4 border-top border-light d-flex gap-2.5 justify-content-end">
+                    <a href="{{ route('dashboard') }}" class="btn btn-light rounded-3 px-4 py-2 border small fw-semibold text-secondary" style="font-size: 0.88rem;">Cancelar</a>
+                    
+                    <button type="submit" class="btn btn-primary rounded-3 px-5 py-2 fw-bold border-0 shadow-sm" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); font-size: 0.88rem;">
+                        <i class="bi bi-check-circle-fill me-1.5"></i> Agendar e Insertar Cita
                     </button>
-                    <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary px-4">Cancelar</a>
                 </div>
             </form>
         </div>
@@ -96,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const quickPacienteId = urlParams.get('paciente_id');
     const isQuickStart = urlParams.get('quick_start');
 
-    // Saneamiento forzado complementario por JavaScript para asegurar formato HH:mm sin segundos ni AM/PM
+    // Saneamiento para asegurar formato HH:mm sin segundos ni AM/PM
     if (inputHora && inputHora.value) {
         let partes = inputHora.value.split(':');
         if (partes.length >= 2) {
@@ -109,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (optionToSelect) {
             optionToSelect.style.display = "block"; 
             select.value = quickPacienteId; 
-            status.innerHTML = '<span class="text-success fw-bold"><i class="bi bi-person-check"></i> Paciente recién registrado seleccionado automáticamente.</span>';
+            status.innerHTML = '<span class="text-success fw-bold"><i class="bi bi-person-check-fill"></i> Paciente recién registrado seleccionado automáticamente.</span>';
         }
     }
 
@@ -123,20 +155,17 @@ document.addEventListener('DOMContentLoaded', function() {
         return texto
             .toLowerCase()
             .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "") // Remueve acentos universalmente
+            .replace(/[\u0300-\u036f]/g, "")
             .trim();
     }
 
     function filtrar() {
-        // Normalizamos el apellido ingresado por el usuario (quita tildes y pasa a minúsculas)
         const valApellido = removerTildes(inputApellido.value);
         const valDNI = inputDNI.value.trim();
         let coincidentes = [];
 
         options.forEach(opt => {
-            // Normalizamos también el apellido que viene del dataset del HTML
             const apellidoPac = removerTildes(opt.dataset.apellido);
-
             const matchApellido = valApellido.length >= 2 && apellidoPac.includes(valApellido);
             const matchDNI = valDNI.length >= 3 && opt.dataset.dni.includes(valDNI);
 
@@ -154,11 +183,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (coincidentes.length === 1) {
             select.value = coincidentes[0].value;
-            status.innerHTML = '<span class="text-success"><i class="bi bi-check-all"></i> Paciente encontrado.</span>';
+            status.innerHTML = '<span class="text-success fw-bold"><i class="bi bi-shield-check"></i> Paciente verificado e indexado.</span>';
         } else if (coincidentes.length > 1) {
             select.value = "";
-            // 🛠️ Limpiado el "grid" que se colaba en el string
-            status.innerHTML = `<span class="text-primary"><i class="bi bi-info-circle"></i> ${coincidentes.length} coincidencias.</span>`;
+            status.innerHTML = `<span class="text-primary fw-bold"><i class="bi bi-info-circle-fill"></i> Se encontraron ${coincidentes.length} coincidencias en el directorio.</span>`;
+        } else {
+            if(valApellido.length < 2 && valDNI.length < 3) {
+                status.innerHTML = '<span class="text-muted"><i class="bi bi-info-circle"></i> Ingrese datos filiatorios para indexar el expediente.</span>';
+            } else {
+                status.innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-x-circle-fill"></i> No hay coincidencias registradas.</span>';
+            }
         }
     }
 
@@ -168,18 +202,40 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
+    .fw-black { font-weight: 900; }
+    .uppercase { text-transform: uppercase; }
+    .transition-row-normal { transition: opacity 0.15s ease; }
+    .transition-row-normal:hover { opacity: 0.85; }
+
+    input.form-control, select.form-select {
+        border: 1px solid #cbd5e1;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input.form-control:focus, select.form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
     #selectPaciente {
         overflow-y: auto;
-        border-radius: 8px;
+        border-radius: 10px;
+        min-height: 160px;
     }
     #selectPaciente option {
-        padding: 10px;
-        border-bottom: 1px solid #f0f0f0;
+        padding: 10px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.92rem;
+        transition: background-color 0.1s;
     }
     #selectPaciente option:checked {
-        background-color: #e7f1ff !important;
-        color: #0d6efd;
-        font-weight: bold;
+        background-color: #e0f2fe !important;
+        color: #0369a1 !important;
+        font-weight: 700;
+    }
+    .select-placeholder-custom {
+        font-size: 0.88rem !important;
+        padding: 14px !important;
+        background-color: #f8fafc;
     }
 </style>
 @endsection
