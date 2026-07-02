@@ -84,7 +84,7 @@
                                 <td class="font-monospace fw-bold ps-3" style="font-size: 0.9rem;">
                                     {{ $paciente->dni ?? 'N/R' }}
                                     @if($isIncompleto)
-                                        <span class="d-block mt-0.5"><span class="badge bg-danger text-white uppercase font-monospace fw-bold" style="font-size: 0.6rem; padding: 2.5px 5px; letter-spacing: 0.2px;">Incompleto</span></span>
+                                        <span class="d-block mt-0.5" id="badge-incompleto-{{ $paciente->id }}"><span class="badge bg-danger text-white uppercase font-monospace fw-bold" style="font-size: 0.6rem; padding: 2.5px 5px; letter-spacing: 0.2px;">Incompleto</span></span>
                                     @endif
                                 </td>
                                 <td class="fw-bold text-dark" style="font-size: 0.92rem;">{{ $paciente->apellido }}</td>
@@ -130,6 +130,16 @@
                                                     <i class="bi bi-pencil-square me-2 text-dark"></i>Editar Datos Base
                                                 </a>
                                             </li>
+                                            
+                                            {{-- NUEVO BOTÓN: SOLO APARECE SI ESTÁ INCOMPLETO --}}
+                                            @if($isIncompleto)
+                                            <li id="btn-ignorar-wrapper-{{ $paciente->id }}">
+                                                <button type="button" class="dropdown-item py-2 fw-medium text-warning" onclick="ignorarAlertaPaciente({{ $paciente->id }}, '{{ $paciente->apellido }}, {{ $paciente->nombre }}')" style="font-size: 0.85rem;">
+                                                    <i class="bi bi-bell-slash-fill me-2 text-warning"></i>Ignorar Alertas
+                                                </button>
+                                            </li>
+                                            @endif
+
                                             <li><hr class="dropdown-divider border-light"></li>
                                             <li>
                                                 <button type="button" class="dropdown-item py-2 text-danger fw-bold" onclick="eliminarPacienteHistorial({{ $paciente->id }}, '{{ $paciente->apellido }}, {{ $paciente->nombre }}')" style="font-size: 0.85rem;">
@@ -146,7 +156,7 @@
             </div>
         </div>
 
-        {{-- CONTENEDOR CONTROLES INFERIORES: Paginación y Selector juntos en bloque STICKY --}}
+        {{-- CONTENEDOR CONTROLES INFERIORES --}}
         <div id="wrapper-controles-sticky" class="barra-paginacion-sticky d-flex flex-wrap justify-content-between align-items-center px-4 py-2.5 border-top border-light shadow-lg">
             <div id="bloque-info-left" class="d-flex align-items-center gap-3"></div>
             <div id="bloque-paginado-right" class="d-flex align-items-center gap-3"></div>
@@ -174,18 +184,14 @@
                 "info": "Mostrando _START_ a _END_ de _TOTAL_ pacientes",
                 "lengthMenu": "Mostrar: _MENU_"
             },
-            // El dom original se mantiene vivo y seguro en la fila inferior original (no d-none)
             "dom": '<"d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-light bg-light-subtle"f>rt<"tabla-controles-nativos-originales"ilp>',
             "columnDefs": [
                 { "orderable": false, "targets": "no-sort" }
             ],
-            // 🔄 SISTEMA DE REFLEJO EN TIEMPO REAL: Se ejecuta ante CUALQUIER cambio (filtros, orden, clics, etc.)
             "drawCallback": function(settings) {
-                // Sincronizamos el texto informativo de la izquierda
                 const infoTexto = $('.tabla-controles-nativos-originales .dataTables_info').html();
                 $('#bloque-info-left').html(`<div class="dataTables_info">${infoTexto}</div>`);
                 
-                // Clonamos la estructura exacta del selector de páginas y del paginador
                 const lengthHTML = $('.tabla-controles-nativos-originales .dataTables_length').html();
                 const paginateHTML = $('.tabla-controles-nativos-originales .dataTables_paginate').html();
                 
@@ -194,62 +200,89 @@
                     <div class="dataTables_paginate_clone paging_simple_numbers">${paginateHTML}</div>
                 `);
 
-                // Estilizamos el nuevo selector clonado
                 $('.dataTables_length_clone select').addClass('form-select rounded-3 font-monospace py-1').css({
                     'width': '80px', 'height': '34px', 'font-weight': '700', 'display': 'inline-block'
                 });
 
-                // Sincronizar el valor seleccionado del dropdown clonado con el original
                 const valorActualOriginal = $('.tabla-controles-nativos-originales .dataTables_length select').val();
                 $('.dataTables_length_clone select').val(valorActualOriginal);
             }
         });
 
-        // ── PUENTE INTERACTIVO DE EVENTOS (EVENT DELEGATION) ──
-        
-        // 1. Sincronizar clicks de los números de página flotantes con los botones nativos reales
         $('#bloque-paginado-right').on('click', '.page-link', function(e) {
             e.preventDefault();
-            // Identificar a qué página se quiere ir
             const esItemAnterior = $(this).parent().hasClass('previous');
             const esItemSiguiente = $(this).parent().hasClass('next');
             const numeroPaginaText = $(this).text().trim();
 
             if (esItemAnterior) {
-                $('.tabla-controles-nativos-originales .products-action .previous .page-link', $('.tabla-controles-nativos-originales .page-item.previous .page-link').click());
+                $('.tabla-controles-nativos-originales .page-item.previous .page-link').click();
             } else if (esItemSiguiente) {
                 $('.tabla-controles-nativos-originales .page-item.next .page-link').click();
             } else {
-                // Buscar el botón original que tenga el mismo número y disparar el click real
                 $('.tabla-controles-nativos-originales .page-link').each(function() {
                     if ($(this).text().trim() === numeroPaginaText) {
                         $(this).click();
-                        return false; // romper bucle
+                        return false;
                     }
                 });
             }
         });
 
-        // 2. Sincronizar cambios en el selector flotante de cantidad (10, 20, 50, 100)
         $('#bloque-paginado-right').on('change', '.dataTables_length_clone select', function() {
             const nuevoValor = $(this).val();
-            // Le pasamos el valor al selector real oculto y disparamos su evento de cambio nativo
             $('.tabla-controles-nativos-originales .dataTables_length select').val(nuevoValor).change();
         });
 
-        // Estilización de padding reducido en buscador superior
         $('.dataTables_filter input').addClass('form-control rounded-3').css({
-            'padding-left': '36px',
-            'border': '1px solid #cbd5e1',
-            'font-weight': '500',
-            'width': '280px',
-            'height': '36px',
+            'padding-left': '36px', 'border': '1px solid #cbd5e1', 'font-weight': '500', 'width': '280px', 'height': '36px',
             'background-image': 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' fill=\'%2394a3b8\' class=\'bi bi-search\'%3E%3Cpath d=\'M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z\'/%3E%3C/svg%3E")',
-            'background-repeat': 'no-repeat',
-            'background-position': '12px center'
+            'background-repeat': 'no-repeat', 'background-position': '12px center'
         });
         $('.dataTables_filter label').contents().filter(function() { return this.nodeType === 3; }).remove();
     });
+
+    // NUEVA FUNCIÓN AJAX PARA DETENER ALERTAS
+    async function ignorarAlertaPaciente(id, nombreCompleto) {
+        if (confirm(`¿Desea dejar de emitir alertas de expediente incompleto para "${nombreCompleto}"?`)) {
+            try {
+                // Reemplaza esta ruta por la real de tu backend web.php (ej. Route::post('/pacientes/{id}/ignorar-alerta', ...))
+                const response = await fetch(`/pacientes/${id}/ignorar-alerta`, {
+                    method: 'POST',
+                    headers: { 
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}', 
+                        'X-Requested-With': 'XMLHttpRequest', 
+                        'Accept': 'application/json' 
+                    }
+                });
+                const result = await response.json();
+                
+                if (response.ok && result.status === 'success') {
+                    const fila = document.getElementById(`row-paciente-${id}`);
+                    if (fila) {
+                        // Cambiamos clases dinámicamente para quitar la alerta visual en la tabla
+                        fila.classList.remove('fila-incompleta-clinical');
+                        fila.classList.add('transition-row-normal');
+                        
+                        // Ocultamos el badge "Incompleto" y el propio botón del dropdown
+                        $(`#badge-incompleto-${id}`).remove();
+                        $(`#btn-ignorar-wrapper-${id}`).remove();
+
+                        // Actualizamos el valor de ordenación de DataTables en celda oculta (cambia de 0 a 1)
+                        const celdaEstado = tablaGeneral.cell(fila, 0);
+                        celdaEstado.data('1');
+                        
+                        // Re-ordenamos suavemente manteniendo la página actual
+                        tablaGeneral.draw(false);
+                    }
+                } else {
+                    alert("No se pudo procesar la solicitud.");
+                }
+            } catch (error) { 
+                alert("Error crítico al comunicar con el servidor."); 
+            }
+        }
+    }
 
     async function eliminarPacienteHistorial(id, nombreCompleto) {
         if (confirm(`⚠️ ¿Está completamente seguro de eliminar a "${nombreCompleto}"?\nEsta acción borrará permanentemente sus registros.`)) {
@@ -276,7 +309,7 @@
     .fw-black { font-weight: 900; }
     .uppercase { text-transform: uppercase; }
     .indicator-box-sample { width: 14px; height: 14px; display: inline-block; border-radius: 4px; flex-shrink: 0; }
-    .transition-row-normal { transition: background-color 0.15s ease; }
+    .transition-row-normal { transition: background-color 0.15s ease, color 0.15s ease; }
 
     .fila-incompleta-clinical td {
         background-color: #f0f9ff !important;
@@ -288,9 +321,6 @@
     .btn-action-trigger { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; transition: all 0.15s; }
     .btn-action-trigger:hover { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; }
 
-    /* =========================================================================
-       ── BARRA FLOTANTE INTEGRAL VERDADERA (STICKY FIX EN MAIN SCOPE) ──
-       ========================================================================= */
     .barra-paginacion-sticky {
         position: sticky;
         bottom: 0;
@@ -299,13 +329,10 @@
         box-shadow: 0 -8px 24px -4px rgba(15, 23, 42, 0.12) !important;
     }
 
-    /* Paginador estético */
     .dataTables_info { font-size: 0.82rem; font-weight: 700; color: #475569 !important; margin: 0 !important; }
     .pagination { margin: 0 !important; gap: 3px; }
     .page-item .page-link { border-radius: 6px !important; font-size: 0.85rem; font-weight: 600; padding: 6px 12px; border: 1px solid #e2e8f0; }
     .page-item.active .page-link { background-color: #4e73df !important; border-color: #4e73df !important; color: white !important; }
-    .tabla-controles-nativos-originales {
-        display: none !important;
-    }
+    .tabla-controles-nativos-originales { display: none !important; }
 </style>
 @endsection

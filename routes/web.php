@@ -29,7 +29,7 @@ Route::post('/antecedentes/guardar-todo', [App\Http\Controllers\AntecedenteContr
 
 Route::resource('pacientes', PacienteController::class);
 Route::get('/pacientes/{id}/datos', [App\Http\Controllers\PacienteController::class, 'verDatos'])->name('pacientes.datos');
-Route::post('/pacientes/{paciente}/ignorar', [PacienteController::class, 'ignorarAlertas'])->name('pacientes.ignorarAlertas');
+Route::post('/pacientes/{id}/ignorar-alerta', [PacienteController::class, 'ignorarAlerta'])->name('pacientes.ignorarAlerta');
 
 Route::get('/medicamentos', [App\Http\Controllers\MedicamentoController::class, 'index'])->name('medicamentos.index');
 Route::post('/medicamentos', [App\Http\Controllers\MedicamentoController::class, 'store'])->name('medicamentos.store');
