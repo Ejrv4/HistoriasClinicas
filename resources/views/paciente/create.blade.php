@@ -106,7 +106,7 @@
         <div class="row g-3 mb-4.5 align-items-end">
             <div class="col-12 col-md-6 col-lg-4">
                 <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Celular Personal</label>
-                <input type="text" name="celular_personal" maxlength="9" class="form-control rounded-3 py-2 font-monospace fw-semibold" value="{{ old('celular_personal') }}" placeholder="Ej: 987654321" style="font-size: 0.92rem; height: 38px;">
+                <input type="text" name="celular_personal" id="celular_personal_input" maxlength="15" class="form-control rounded-3 py-2 font-monospace fw-semibold" value="{{ old('celular_personal') }}" placeholder="Ej: 987654321" style="font-size: 0.92rem; height: 38px;">
             </div>
             <div class="col-12 col-md-6 col-lg-4">
                 <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Correo Electrónico</label>
@@ -199,6 +199,43 @@
             window.initSingleCustomDropdown('paciente_distrito_select');
         }
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+    if (typeof window.initSingleCustomDropdown === 'function') {
+        window.initSingleCustomDropdown('paciente_genero_select');
+        window.initSingleCustomDropdown('paciente_distrito_select');
+    }
+
+    // ── LÓGICA DE LIMPIEZA AUTOMÁTICA PARA EL CELULAR ──
+    const phoneInput = document.getElementById('celular_personal_input');
+
+    if (phoneInput) {
+        function limpiarNumeroPeratado(valor) {
+            // 1. Convertir a string y eliminar espacios, guiones o paréntesis
+            let soloNumeros = valor.replace(/\D/g, '');
+
+            // 2. Si empieza con 51 (código de Perú) y tiene más de 9 dígitos, remover el 51 inicial
+            if (soloNumeros.startsWith('51') && soloNumeros.length > 9) {
+                soloNumeros = soloNumeros.substring(2);
+            }
+
+            // 3. Limitar estrictamente a los primeros 9 dígitos
+            return soloNumeros.substring(0, 9);
+        }
+
+        // Evento al Pegar (Ctrl + V o menú contextual)
+        phoneInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            this.value = limpiarNumeroPeratado(pastedText);
+        });
+
+        // Evento al escribir o modificar manualmente
+        phoneInput.addEventListener('input', function() {
+            this.value = limpiarNumeroPeratado(this.value);
+        });
+    }
+});
 </script>
 
 <style>

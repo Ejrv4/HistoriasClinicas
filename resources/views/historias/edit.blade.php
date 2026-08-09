@@ -211,7 +211,7 @@
 
                             <div class="mb-0">
                                 <label class="form-label fw-bold text-secondary small uppercase font-monospace" style="font-size: 0.72rem; letter-spacing: 0.5px;">Plan / Tratamiento</label>
-                                <textarea name="plan" class="form-control rounded-3" rows="4" placeholder="Indicaciones médicas generales...">{{ old('plan', $historia->plan) }}</textarea>
+                                <textarea name="plan" class="form-control rounded-3 textarea-expandable" rows="4" placeholder="Indicaciones médicas generales...">{{ old('plan', $historia->plan) }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -933,6 +933,11 @@
     }
     
     textarea.form-control { resize: none; border-radius: 8px; border: 1px solid #cbd5e1; }
+    textarea.textarea-expandable { 
+        resize: vertical !important; 
+        min-height: 100px; 
+        max-height: 400px; 
+    }
     textarea.form-control:focus { border-color: #86b7fe; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); }
 
     .btn-remove-row { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
