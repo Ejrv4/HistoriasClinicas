@@ -9,7 +9,7 @@ use App\Http\Controllers\RecetaController;
 use App\Http\Controllers\Cie10Controller;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/dashboard');
 });
 
 Route::get('/dashboard', [CitaController::class, 'index'])->name('dashboard');

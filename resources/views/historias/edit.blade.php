@@ -10,12 +10,12 @@
     </div>
     
     {{-- Encabezado del Paciente con Diseño de Alta Gama --}}
-    <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden" style="background: #ffffff; border-left: 5px solid #4e73df !important;">
+    <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden card-header-patient-info" style="border-left: 5px solid #4e73df !important;">
         <div class="card-body p-4">
             <div class="row align-items-center g-3">
                 <div class="col-md-8">
                     <div class="d-flex align-items-center gap-2 mb-1.5 flex-wrap">
-                        <h3 class="fw-black text-dark m-0 tracking-tight" style="font-size: 1.6rem; letter-spacing: -0.5px;">
+                        <h3 class="fw-black text-dark-mode-title m-0 tracking-tight" style="font-size: 1.6rem; letter-spacing: -0.5px;">
                             {{ $cita->paciente->apellido }}, {{ $cita->paciente->nombre }} 
                         </h3>
                         <span class="text-secondary fw-semibold font-monospace" style="font-size: 1.1rem;">
@@ -26,7 +26,7 @@
                             @endif
                         </span> 
                         @if($cita->paciente->genero)
-                            <span class="badge border font-monospace fw-bold px-2 py-1 rounded-2" style="font-size: 0.75rem; background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd;">
+                            <span class="badge border font-monospace fw-bold px-2 py-1 rounded-2 badge-gender-custom">
                                 {{ strtoupper($cita->paciente->genero) }}
                             </span>
                         @endif
@@ -34,13 +34,13 @@
                     <div class="d-flex flex-wrap align-items-center gap-2 font-monospace">
                         <span class="badge bg-dark px-2.5 py-1.5 rounded-2">HC N° {{ str_pad($cita->paciente->id, 6, '0', STR_PAD_LEFT) }}</span>
                         <span class="badge bg-primary px-2.5 py-1.5 rounded-2" style="background-color: #4e73df !important;">CITA N° {{ str_pad($cita->id, 6, '0', STR_PAD_LEFT) }}</span>
-                        <span class="text-muted ms-2 small fw-bold">DNI: <span class="text-dark">{{ $cita->paciente->dni ?? 'N/R' }}</span></span>
+                        <span class="text-muted ms-2 small fw-bold">DNI: <span class="text-dark-mode-title">{{ $cita->paciente->dni ?? 'N/R' }}</span></span>
                     </div>
                 </div>
                 <div class="col-md-4 text-md-end">
-                    <div class="d-inline-block text-start bg-light px-3 py-2 rounded-3 border">
+                    <div class="d-inline-block text-start bg-light-subtle px-3 py-2 rounded-3 border card-inner-box">
                         <small class="text-secondary d-block uppercase font-monospace fw-bold mb-0.5" style="font-size: 0.65rem; letter-spacing: 0.5px;">País de Origen</small>
-                        <span class="fw-bold text-dark" style="font-size: 0.95rem;"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ $cita->paciente->pais_nacimiento ?? 'No registrado' }}</span>
+                        <span class="fw-bold text-dark-mode-title" style="font-size: 0.95rem;"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ $cita->paciente->pais_nacimiento ?? 'No registrado' }}</span>
                     </div>
                 </div>
             </div>
@@ -77,9 +77,9 @@
             
             {{-- PESTAÑA ANTECEDENTES --}}
             <div class="tab-pane fade show active" id="pestana-antecedentes" role="tabpanel">
-                <div class="card border-0 shadow-sm p-4 rounded-4" style="background: #ffffff;">
+                <div class="card border-0 shadow-sm p-4 rounded-4 bg-body-card">
                     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-                        <h5 class="fw-bold text-dark mb-0 d-flex align-items-center"><i class="bi bi-file-earmark-medical-fill text-primary me-2 fs-4"></i>Actualizar Antecedentes</h5>
+                        <h5 class="fw-bold text-dark-mode-title mb-0 d-flex align-items-center"><i class="bi bi-file-earmark-medical-fill text-primary me-2 fs-4"></i>Actualizar Antecedentes</h5>
                         <div class="d-flex align-items-center gap-3">
                             <span id="save-status" class="small fw-semibold font-monospace"></span>
                             <button type="button" onclick="guardarAntecedentesManual(event)" class="btn btn-success fw-bold shadow-sm rounded-3 border-0 px-3 py-2" style="background-color: #10b981; font-size: 0.85rem;">
@@ -115,12 +115,12 @@
             <div class="tab-pane fade" id="consulta" role="tabpanel">
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <div class="card border-0 shadow-sm bg-white rounded-4 overflow-hidden border">
-                            <div class="card-header bg-white border-bottom fw-bold font-monospace uppercase text-secondary py-2.5 px-3" style="font-size: 0.72rem; letter-spacing: 0.5px;">Referencia Histórica</div>
+                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden border bg-body-card">
+                            <div class="card-header border-bottom fw-bold font-monospace uppercase text-secondary py-2.5 px-3 bg-card-cap" style="font-size: 0.72rem; letter-spacing: 0.5px;">Referencia Histórica</div>
                             <div class="card-body p-0">
                                 <ul class="list-group list-group-flush small font-monospace" id="lista-referencia">
                                     @forelse($antecedentes as $ant)
-                                        <li class="list-group-item bg-transparent py-2.5 px-3 border-0 border-bottom border-light">
+                                        <li class="list-group-item bg-transparent py-2.5 px-3 border-0 border-bottom border-light text-body-card">
                                             <strong class="text-primary d-block uppercase mb-0.5" style="font-size: 0.72rem;">{{ $ant->tipo }}</strong>
                                             <span class="text-secondary fw-medium">{{ $ant->descripcion }}</span>
                                         </li>
@@ -133,7 +133,7 @@
                     </div>
 
                     <div class="col-md-9">
-                        <div class="card border-0 shadow-sm p-4 rounded-4" style="background: #ffffff;">
+                        <div class="card border-0 shadow-sm p-4 rounded-4 bg-body-card">
                             <div class="mb-3">
                                 <label class="form-label fw-bold text-secondary small uppercase font-monospace" style="font-size: 0.72rem; letter-spacing: 0.5px;">Anamnesis</label>
                                 <textarea name="anamnesis" class="form-control rounded-3" rows="4" required>{{ old('anamnesis', $historia->anamnesis) }}</textarea>
@@ -211,7 +211,7 @@
 
                             <div class="mb-0">
                                 <label class="form-label fw-bold text-secondary small uppercase font-monospace" style="font-size: 0.72rem; letter-spacing: 0.5px;">Plan / Tratamiento</label>
-                                <textarea name="plan" class="form-control rounded-3" rows="4" placeholder="Indicaciones médicas generales...">${{ old('plan', $historia->plan) }}</textarea>
+                                <textarea name="plan" class="form-control rounded-3" rows="4" placeholder="Indicaciones médicas generales...">{{ old('plan', $historia->plan) }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -220,8 +220,8 @@
 
             {{-- PESTAÑA RECETA --}}
             <div class="tab-pane fade" id="pestana-receta" role="tabpanel">
-                <div class="card border-0 shadow-sm p-4 rounded-4" style="background: #ffffff;">
-                    <div class="bg-light p-3 rounded-4 border mb-4" style="background-color: #f8fafc !important;">
+                <div class="card border-0 shadow-sm p-4 rounded-4 bg-body-card">
+                    <div class="p-3 rounded-4 border mb-4 card-inner-box">
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
                                 <x-custom-search-dropdown 
@@ -296,9 +296,9 @@
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label small font-monospace fw-bold text-primary" style="font-size: 0.7rem;">CANT. TOTAL</label>
-                                <input type="number" id="rec_total" class="form-control fw-black text-center border-primary text-primary" value="0" style="height: 38px; background-color: #f0f4ff;">
+                                <input type="number" id="rec_total" class="form-control fw-black text-center border-primary text-primary input-total-calc" value="0" style="height: 38px;">
                             </div>
-                           
+                            
                             <div class="col-12 text-end mt-3">
                                 <button type="button" onclick="addMedicamento()" class="btn btn-danger px-4 py-2 fw-bold shadow-sm rounded-3 border-0" style="background-color: #e11d48; font-size: 0.88rem;">
                                     <i class="bi bi-plus-lg me-2"></i>AÑADIR A LA RECETA
@@ -335,35 +335,35 @@
             </div>
         </div>
     </form>
-   
+    
     {{-- ACORDEÓN DE HISTORIAL HISTÓRICO --}}
     <div class="mt-5 mb-5">
-        <h5 class="fw-bold text-dark mb-3 d-flex align-items-center"><i class="bi bi-clock-history me-2 text-primary"></i>Historial de Atenciones Previas</h5>
+        <h5 class="fw-bold text-dark-mode-title mb-3 d-flex align-items-center"><i class="bi bi-clock-history me-2 text-primary"></i>Historial de Atenciones Previas</h5>
         <div class="accordion shadow-sm rounded-4 overflow-hidden" id="historialToggles">
             @forelse($historiasAnteriores as $hist)
-                <div class="accordion-item border-0 mb-2 shadow-sm rounded overflow-hidden" style="border: 1px solid #e2e8f0 !important;">
+                <div class="accordion-item border-0 mb-2 shadow-sm rounded overflow-hidden card-accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed bg-white fw-bold py-3 text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#h{{ $hist->id }}">
+                        <button class="accordion-button collapsed bg-body-card fw-bold py-3 text-dark-mode-title" type="button" data-bs-toggle="collapse" data-bs-target="#h{{ $hist->id }}">
                             <div class="d-flex justify-content-between w-100 me-3 align-items-center">
-                                <span class="fw-bold text-dark"><i class="bi bi-calendar-check me-2 text-success"></i>Atención del {{ \Carbon\Carbon::parse($hist->created_at)->format('d/m/Y') }}</span>
-                                <span class="badge border font-monospace text-primary bg-light-subtle px-3 py-1.5 rounded-2" style="font-size: 0.78rem;">
+                                <span class="fw-bold text-dark-mode-title"><i class="bi bi-calendar-check me-2 text-success"></i>Atención del {{ \Carbon\Carbon::parse($hist->created_at)->format('d/m/Y') }}</span>
+                                <span class="badge border font-monospace text-primary bg-light-subtle px-3 py-1.5 rounded-2 badge-history-cie" style="font-size: 0.78rem;">
                                     CIE-10: {{ $hist->diagnosticos->first() ? $hist->diagnosticos->first()->cie_10 : 'N/A' }}
                                 </span>
                             </div>
                         </button>
                     </h2>
                     <div id="h{{ $hist->id }}" class="accordion-collapse collapse">
-                        <div class="accordion-body bg-white border-top border-light p-4">
+                        <div class="accordion-body bg-body-card border-top p-4">
                             <div class="row g-4">
                                 <div class="col-md-6 border-end-md">
                                     <h6 class="fw-bold font-monospace text-secondary small text-uppercase mb-2.5" style="font-size: 0.72rem; letter-spacing: 0.5px;">Anamnesis / Examen Físico</h6>
-                                    <div class="p-3 bg-light rounded-3 border-start border-4 border-info mb-3">
+                                    <div class="p-3 bg-light-subtle rounded-3 border-start border-4 border-info mb-3 card-inner-box">
                                         <small class="d-block text-muted font-monospace uppercase fw-bold mb-1" style="font-size: 0.65rem;">Anamnesis narrada</small>
-                                        <p class="small text-dark mb-0 fw-medium">{{ $hist->anamnesis }}</p>
+                                        <p class="small text-dark-mode-title mb-0 fw-medium">{{ $hist->anamnesis }}</p>
                                     </div>
-                                    <div class="p-3 bg-light rounded-3 border-start border-4 border-secondary">
+                                    <div class="p-3 bg-light-subtle rounded-3 border-start border-4 border-secondary card-inner-box">
                                         <small class="d-block text-muted font-monospace uppercase fw-bold mb-1" style="font-size: 0.65rem;">Examen exploratorio</small>
-                                        <p class="small text-dark mb-0 fw-medium">{{ $hist->examen_fisico }}</p>
+                                        <p class="small text-dark-mode-title mb-0 fw-medium">{{ $hist->examen_fisico }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6 ps-md-4">
@@ -380,7 +380,7 @@
                                             <p class="text-muted small fst-italic">Sin diagnósticos especificados.</p>
                                         @endif
                                     </div>
-                                    <div class="p-3 bg-light rounded-3 border border-light-subtle text-dark">
+                                    <div class="p-3 bg-light-subtle rounded-3 border text-dark-mode-title card-inner-box">
                                         <small class="d-block text-muted font-monospace uppercase fw-bold mb-1" style="font-size: 0.65rem;">Plan farmacológico / Terapéutico</small>
                                         <span class="small fw-medium">{{ $hist->plan }}</span>
                                     </div>
@@ -390,26 +390,26 @@
                     </div>
                 </div>
             @empty
-                <div class="text-muted p-4 border rounded-4 bg-white text-center small fw-medium text-secondary">El paciente no registra consultas previas en el sistema.</div>
+                <div class="text-muted p-4 border rounded-4 bg-body-card text-center small fw-medium text-secondary">El paciente no registra consultas previas en el sistema.</div>
             @endforelse
         </div>
     </div>
-
+    
     {{-- MODAL ADVERTENCIA DE SALIDA --}}
     <div class="modal fade" id="modalConfirmarSalida" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-content border-0 shadow-lg rounded-4 bg-body-card">
                 <div class="modal-header bg-warning-subtle border-0 py-3">
                     <h5 class="modal-title fw-bold text-warning-emphasis d-flex align-items-center" style="font-size: 1.1rem;">
                         <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i> Cambios sin guardar
                     </h5>
                 </div>
                 <div class="modal-body py-4">
-                    <p class="mb-0 text-dark fw-semibold" style="font-size: 0.92rem; line-height: 1.5;">
+                    <p class="mb-0 text-dark-mode-title fw-semibold" style="font-size: 0.92rem; line-height: 1.5;">
                         ⚠️ Detectamos que has modificado la atención actual pero no has guardado los cambios. ¿Estás seguro de que deseas salir? Perderás toda la información ingresada.
                     </p>
                 </div>
-                <div class="modal-footer border-top-0 pt-0 bg-light p-2.5 rounded-bottom-4">
+                <div class="modal-footer border-top-0 pt-0 p-2.5 rounded-bottom-4 card-inner-box">
                     <button type="button" class="btn btn-light rounded-3 fw-bold text-secondary px-3 py-2 small" data-bs-dismiss="modal" style="font-size: 0.85rem;">Permanecer aquí</button>
                     <a href="#" id="btnConfirmarSalidaURL" class="btn btn-warning rounded-3 fw-bold px-4 py-2 shadow-sm text-dark" style="font-size: 0.85rem;">Salir sin guardar</a>
                 </div>
@@ -447,11 +447,56 @@
                 window.initSingleCustomDropdown('cie_select_{{ $idx }}');
             }
         @endforeach
+
+        configurarNavegacionTecladoParaDropdowns();
     });
+
+    /* =========================================================================
+       ⌨️ MOTOR DE NAVEGACIÓN POR TECLADO (TAB, FLECHAS ARRIBA/ABAJO, ENTER)
+       ========================================================================= */
+    function configurarNavegacionTecladoParaDropdowns() {
+        document.addEventListener('keydown', function(e) {
+            const input = e.target;
+            if (!input || !input.id || (!input.id.includes('_select_') && !input.id.includes('rec_'))) return;
+
+            const box = input.closest('.custom-search-dropdown-box');
+            if (!box) return;
+
+            const list = box.querySelector('ul');
+            if (!list || list.classList.contains('d-none')) return;
+
+            const items = Array.from(list.querySelectorAll('.dropdown-item-custom')).filter(i => i.style.display !== 'none');
+            if (items.length === 0) return;
+
+            let currentIndex = items.findIndex(i => i.classList.contains('item-active-keyboard'));
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (currentIndex >= 0) items[currentIndex].classList.remove('item-active-keyboard');
+                currentIndex = (currentIndex + 1) % items.length;
+                items[currentIndex].classList.add('item-active-keyboard');
+                items[currentIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (currentIndex >= 0) items[currentIndex].classList.remove('item-active-keyboard');
+                currentIndex = (currentIndex - 1 + items.length) % items.length;
+                items[currentIndex].classList.add('item-active-keyboard');
+                items[currentIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'Enter' || e.key === 'Tab') {
+                const itemParaSeleccionar = currentIndex >= 0 ? items[currentIndex] : items[0];
+                if (itemParaSeleccionar) {
+                    if (e.key === 'Enter') e.preventDefault();
+                    itemParaSeleccionar.click();
+                }
+            } else if (e.key === 'Escape') {
+                list.classList.add('d-none');
+            }
+        });
+    }
 
     function generarHtmlOpciones(arrayOpts) {
         return arrayOpts.map(o => `
-            <li data-value="${o.id}" data-text="${o.nombre}" class="dropdown-item-custom position-relative px-3 py-2 border-bottom text-dark cursor-pointer text-truncate uppercase" style="font-size: 0.88rem; font-weight: 500; border-color: #f1f3f5 !important;">
+            <li data-value="${o.id}" data-text="${o.nombre}" class="dropdown-item-custom position-relative px-3 py-2 border-bottom text-dark-mode-title cursor-pointer text-truncate uppercase" style="font-size: 0.88rem; font-weight: 500;">
                 <span class="visible-text-span">${o.nombre}</span>
                 <div class="custom-hover-tooltip" style="position: absolute; inset: 0; padding: 0.5rem 1rem; background-color: #212529; color: #ffffff; font-size: 0.78rem; font-weight: 600; line-height: 1.3; display: flex; align-items: center; justify-content: start; pointer-events: none; visibility: hidden; opacity: 0; transition: opacity 0.1s ease; white-space: normal; z-index: 10;">${o.nombre}</div>
             </li>`).join('');
@@ -471,7 +516,7 @@
                             <i class="bi bi-chevron-down dropdown-arrow-icon" id="diag_select_${diagCounter}_arrow" style="transition: transform 0.2s; display: inline-block;"></i>
                         </div>
                     </div>
-                    <ul id="diag_select_${diagCounter}_list" class="d-none position-absolute start-0 w-100 dropdown-menu-floating shadow-lg border rounded-3 p-0 m-0 overflow-auto" style="max-height: 240px; z-index: 1050; background: #ffffff; list-style: none;">${generarHtmlOpciones(opcionesDiagnostico)}</ul>
+                    <ul id="diag_select_${diagCounter}_list" class="d-none position-absolute start-0 w-100 dropdown-menu-floating shadow-lg border rounded-3 p-0 m-0 overflow-auto bg-body-card" style="max-height: 240px; z-index: 1050; list-style: none;">${generarHtmlOpciones(opcionesDiagnostico)}</ul>
                 </div>
             </div>
             <div class="col-md-3">
@@ -483,7 +528,7 @@
                             <i class="bi bi-chevron-down dropdown-arrow-icon" id="cie_select_${diagCounter}_arrow" style="transition: transform 0.2s; display: inline-block;"></i>
                         </div>
                     </div>
-                    <ul id="cie_select_${diagCounter}_list" class="d-none position-absolute start-0 w-100 dropdown-menu-floating shadow-lg border rounded-3 p-0 m-0 overflow-auto" style="max-height: 240px; z-index: 1050; background: #ffffff; list-style: none;">${generarHtmlOpciones(opcionesCie)}</ul>
+                    <ul id="cie_select_${diagCounter}_list" class="d-none position-absolute start-0 w-100 dropdown-menu-floating shadow-lg border rounded-3 p-0 m-0 overflow-auto bg-body-card" style="max-height: 240px; z-index: 1050; list-style: none;">${generarHtmlOpciones(opcionesCie)}</ul>
                 </div>
             </div>
             <div class="col-md-1 pb-1 text-center">
@@ -745,9 +790,88 @@
         el.addEventListener('change', function() { configurarVisibilidadCampos(); calcularCantidadTotal(); });
     });
 
+    async function guardarAntecedentesManual(event) {
+        const statusLabel = document.getElementById('save-status');
+        const btn = event.currentTarget;
+        const pacienteId = document.getElementById('paciente_id_global').value;
+        if (!pacienteId) return alert("Error: No se encontró el ID del paciente.");
+        const textoMedico = document.querySelector('textarea[name="Medico"]').value.trim();
+        const textoQuirurgico = document.querySelector('textarea[name="Quirúrgico"]').value.trim();
+        const textoAlergia = document.querySelector('textarea[name="Alergia"]').value.trim();
+        const textoMedicacion = document.querySelector('textarea[name="Medicación"]').value.trim();
+
+        btn.disabled = true;
+        statusLabel.className = 'text-muted';
+        statusLabel.innerHTML = '<i class="bi bi-arrow-repeat spinner-border spinner-border-sm me-1"></i>Guardando...';
+        try {
+            const response = await fetch("{{ route('antecedentes.guardar_todo') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+                body: JSON.stringify({ paciente_id: pacienteId, Medico: textoMedico, Quirúrgico: textoQuirurgico, Alergia: textoAlergia, Medicación: textoMedicacion })
+            });
+            const result = await response.json();
+            if (response.ok && result.status === 'success') {
+                statusLabel.className = 'text-success fw-bold';
+                statusLabel.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardado correctamente';
+                const listaReferencia = document.getElementById('lista-referencia');
+                if (listaReferencia) {
+                    let nuevoHtml = '';
+                    if (textoMedico) nuevoHtml += `<li class="list-group-item bg-transparent py-2.5 px-3 border-bottom"><strong class="text-primary d-block small">MÉDICO</strong><span>${textoMedico}</span></li>`;
+                    if (textoQuirurgico) nuevoHtml += `<li class="list-group-item bg-transparent py-2.5 px-3 border-bottom"><strong class="text-primary d-block small">QUIRÚRGICO</strong><span>${textoQuirurgico}</span></li>`;
+                    if (textoAlergia) nuevoHtml += `<li class="list-group-item bg-transparent py-2.5 px-3 border-bottom"><strong class="text-danger d-block small">ALERGIA</strong><span>${textoAlergia}</span></li>`;
+                    if (textoMedicacion) nuevoHtml += `<li class="list-group-item bg-transparent py-2.5 px-3 border-bottom"><strong class="text-success d-block small">MEDICACIÓN</strong><span>${textoMedicacion}</span></li>`;
+                    listaReferencia.innerHTML = nuevoHtml || '<li class="list-group-item bg-transparent text-muted fst-italic">Sin registros previos.</li>';
+                }
+                formChanged = false;
+                setTimeout(() => { statusLabel.innerHTML = ''; }, 3000);
+            }
+        } catch (error) {
+            statusLabel.className = 'text-danger fw-bold';
+            statusLabel.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>Error`;
+        } finally { btn.disabled = false; }
+    }
+
     const atencionForm = document.getElementById('formAtencionMedica');
     const btnConfirmarSalidaURL = document.getElementById('btnConfirmarSalidaURL');
     let modalSalidaInstance = null;
+
+    /* =========================================================================
+       🛡️ VALIDACIÓN PREVENTIVA DEL FORMULARIO DE ATENCIÓN Y CIE-10
+       ========================================================================= */
+    atencionForm.addEventListener('submit', function(e) {
+        const filasDiag = document.querySelectorAll('.diagnostico-row');
+        let errorDiag = false;
+
+        filasDiag.forEach((row, idx) => {
+            const hiddenDiag = row.querySelector('[id^="diag_select_"][id$="_value"]');
+            const hiddenCie = row.querySelector('[id^="cie_select_"][id$="_value"]');
+            const inputDiag = row.querySelector('[id^="diag_select_"][id$="_input"]');
+            const inputCie = row.querySelector('[id^="cie_select_"][id$="_input"]');
+
+            if (!hiddenDiag.value.trim() || !hiddenCie.value.trim()) {
+                errorDiag = true;
+                if (inputDiag) inputDiag.style.borderColor = '#ef4444';
+                if (inputCie) inputCie.style.borderColor = '#ef4444';
+            } else {
+                if (inputDiag) inputDiag.style.borderColor = '';
+                if (inputCie) inputCie.style.borderColor = '';
+            }
+        });
+
+        if (errorDiag) {
+            e.preventDefault();
+            alert("⚠️ Atención: Debes seleccionar un Diagnóstico válido y su código CIE-10 correspondiente antes de finalizar la atención.");
+            
+            const consultaTabBtn = document.getElementById('consulta-tab');
+            if (consultaTabBtn) {
+                const tab = new bootstrap.Tab(consultaTabBtn);
+                tab.show();
+            }
+            return false;
+        }
+
+        formChanged = false;
+    });
 
     atencionForm.addEventListener('input', () => { formChanged = true; });
     atencionForm.addEventListener('change', () => { formChanged = true; });
@@ -770,7 +894,6 @@
         });
     });
 
-    atencionForm.addEventListener('submit', () => { formChanged = false; });
     if (btnConfirmarSalidaURL) btnConfirmarSalidaURL.addEventListener('click', () => { formChanged = false; });
     window.addEventListener('beforeunload', function (e) { if (formChanged) { e.preventDefault(); e.returnValue = ''; } });
 </script>
@@ -781,6 +904,15 @@
     .transition-row-normal { transition: all 0.2s ease; }
     .transition-row-normal:hover { opacity: 0.85; }
 
+    /* Estilos estructurales claro */
+    .bg-body-card { background-color: #ffffff; }
+    .text-dark-mode-title { color: #0f172a; }
+    .card-inner-box { background-color: #f8fafc; border-color: #e2e8f0; }
+    .card-header-patient-info { background: #ffffff; }
+    .badge-gender-custom { background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+    .input-total-calc { background-color: #f0f4ff; }
+
+    /* Estilización moderna de pestañas de control */
     .nav-tabs .nav-link { 
         color: #64748b; 
         border: 1px solid #e2e8f0; 
@@ -804,9 +936,46 @@
     textarea.form-control:focus { border-color: #86b7fe; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); }
 
     .btn-remove-row { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
-    
+
+    /* Resaltado del teclado en listas desplegables */
+    .dropdown-item-custom.item-active-keyboard {
+        background-color: #3b82f6 !important;
+        color: #ffffff !important;
+    }
+
     @media(min-width: 768px) {
         .border-end-md { border-right: 1px solid #e2e8f0 !important; }
+    }
+
+    /* ==========================================================================
+       🌙 ADAPTACIONES ESPECÍFICAS MODO OSCURO (DARK MODE OVERRIDES)
+       ========================================================================== */
+    [data-bs-theme="dark"] .bg-body-card { background-color: #1e293b !important; }
+    [data-bs-theme="dark"] .text-dark-mode-title { color: #ffffff !important; }
+    [data-bs-theme="dark"] .card-header-patient-info { background: #1e293b !important; }
+    [data-bs-theme="dark"] .card-inner-box { background-color: #111827 !important; border-color: #334155 !important; }
+    [data-bs-theme="dark"] .card-card-cap { background-color: #0f172a !important; }
+    [data-bs-theme="dark"] .badge-gender-custom { background-color: #0c4a6e !important; color: #38bdf8 !important; border-color: #0369a1 !important; }
+    [data-bs-theme="dark"] .badge-history-cie { background-color: #0f172a !important; border-color: #334155 !important; }
+    [data-bs-theme="dark"] .card-accordion-item { border-color: #334155 !important; }
+    [data-bs-theme="dark"] .input-total-calc { background-color: #111827 !important; color: #60a5fa !important; border-color: #3b82f6 !important; }
+    
+    [data-bs-theme="dark"] .nav-tabs .nav-link:not(.active) {
+        background-color: #1e293b;
+        border-color: #334155;
+        color: #94a3b8;
+    }
+    [data-bs-theme="dark"] .nav-tabs .nav-link:not(.active):hover {
+        background-color: #334155;
+        color: #ffffff;
+    }
+    
+    [data-bs-theme="dark"] textarea.form-control,
+    [data-bs-theme="dark"] input.form-control,
+    [data-bs-theme="dark"] select.form-select {
+        background-color: #0f172a !important;
+        border-color: #334155 !important;
+        color: #ffffff !important;
     }
 </style>
 @endsection
