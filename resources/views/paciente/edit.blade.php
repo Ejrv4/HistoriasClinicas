@@ -10,10 +10,10 @@
     </div>
 
     {{-- ENCABEZADO VIBRANTE COMPACTO --}}
-    <div class="card border-0 rounded-4 shadow-sm mb-4 overflow-hidden text-white" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+    <div class="card border-0 rounded-4 shadow-sm mb-4 overflow-hidden text-white card-header-directorio">
         <div class="card-body py-3.5 px-4">
             <div class="d-flex align-items-center gap-3">
-                <div class="p-2.5 bg-white-50 rounded-3 text-white" style="background: rgba(255,255,255,0.15);">
+                <div class="p-2.5 rounded-3 text-white" style="background: rgba(255,255,255,0.15);">
                     <i class="bi bi-pencil-square fs-3"></i>
                 </div>
                 <div>
@@ -25,21 +25,21 @@
     </div>
 
     {{-- FORMULARIO PRINCIPAL EN PARRILLA --}}
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="background: #ffffff;">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-card-custom">
         <div class="card-body p-4">
             <form action="{{ route('pacientes.update', $paciente->id) }}" method="POST" autocomplete="off" class="m-0">
                 @csrf
                 @method('PUT')
                 
                 {{-- SECCIÓN 1: IDENTIDAD --}}
-                <h5 class="text-dark fw-bold border-bottom pb-2 mb-3.5 d-flex align-items-center" style="font-size: 1.05rem;">
+                <h5 class="text-dark fw-bold border-bottom pb-2 mb-3.5 d-flex align-items-center text-body-card" style="font-size: 1.05rem;">
                     <i class="bi bi-person-vcard text-primary me-2 fs-5"></i> Información de Identidad
                 </h5>
                 
                 <div class="row g-3 mb-3.5 align-items-end">
                     <div class="col-12 col-md-6 col-lg-3">
                         <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Documento de Identidad (DNI)</label>
-                        <input type="text" name="dni" maxlength="8" class="form-control rounded-3 font-monospace fw-semibold py-2 @error('dni') is-invalid @enderror" value="{{ old('dni', $paciente->dni) }}" style="font-size: 0.92rem; height: 38px;">
+                        <input type="text" name="dni" maxlength="20" class="form-control rounded-3 font-monospace fw-semibold py-2 bg-card-custom text-body-card @error('dni') is-invalid @enderror" value="{{ old('dni', $paciente->dni) }}" style="font-size: 0.92rem; height: 38px;">
                         @error('dni')
                             <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                         @enderror
@@ -62,43 +62,43 @@
                     
                     <div class="col-12 col-md-6 col-lg-3">
                         <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Fecha de Nacimiento</label>
-                        <input type="date" name="fecha_nacimiento" class="form-control rounded-3 py-2 font-monospace fw-semibold" value="{{ old('fecha_nacimiento', $paciente->fecha_nacimiento) }}" style="font-size: 0.92rem; height: 38px;">
+                        <input type="date" name="fecha_nacimiento" class="form-control rounded-3 py-2 font-monospace fw-semibold bg-card-custom text-body-card" value="{{ old('fecha_nacimiento', $paciente->fecha_nacimiento) }}" style="font-size: 0.92rem; height: 38px;">
                     </div>
                     
                     <div class="col-12 col-md-6 col-lg-3">
                         <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">País de Nacimiento</label>
-                        <input type="text" name="pais_nacimiento" class="form-control rounded-3 py-2 fw-semibold" value="{{ old('pais_nacimiento', $paciente->pais_nacimiento) }}" style="font-size: 0.92rem; height: 38px;">
+                        <input type="text" name="pais_nacimiento" class="form-control rounded-3 py-2 fw-semibold bg-card-custom text-body-card" value="{{ old('pais_nacimiento', $paciente->pais_nacimiento) }}" style="font-size: 0.92rem; height: 38px;">
                     </div>
                 </div>
 
                 <div class="row g-3 mb-4">
                     <div class="col-12 col-md-6 col-lg-4">
                         <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Nombres <span class="text-danger">*</span></label>
-                        <input type="text" name="nombre" class="form-control rounded-3 py-2 fw-semibold text-uppercase" value="{{ old('nombre', $paciente->nombre) }}" required style="font-size: 0.92rem; height: 38px;">
+                        <input type="text" name="nombre" class="form-control rounded-3 py-2 fw-semibold text-uppercase bg-card-custom text-body-card" value="{{ old('nombre', $paciente->nombre) }}" required style="font-size: 0.92rem; height: 38px;">
                     </div>
                     <div class="col-12 col-md-6 col-lg-4">
                         <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Apellidos <span class="text-danger">*</span></label>
-                        <input type="text" name="apellido" class="form-control rounded-3 py-2 fw-semibold text-uppercase" value="{{ old('apellido', $paciente->apellido) }}" required style="font-size: 0.92rem; height: 38px;">
+                        <input type="text" name="apellido" class="form-control rounded-3 py-2 fw-semibold text-uppercase bg-card-custom text-body-card" value="{{ old('apellido', $paciente->apellido) }}" required style="font-size: 0.92rem; height: 38px;">
                     </div>
                     <div class="col-12 col-md-12 col-lg-4">
                         <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Ocupación / Trabajo</label>
-                        <input type="text" name="trabajo" class="form-control rounded-3 py-2 fw-semibold" value="{{ old('trabajo', $paciente->trabajo) }}" placeholder="Ej: Ingeniero, Empleado, etc." style="font-size: 0.92rem; height: 38px;">
+                        <input type="text" name="trabajo" class="form-control rounded-3 py-2 fw-semibold bg-card-custom text-body-card" value="{{ old('trabajo', $paciente->trabajo) }}" placeholder="Ej: Ingeniero, Empleado, etc." style="font-size: 0.92rem; height: 38px;">
                     </div>
                 </div>
 
                 {{-- SECCIÓN 2: CONTACTO Y UBICACIÓN --}}
-                <h5 class="text-dark fw-bold border-bottom pb-2 mt-2 mb-3.5 d-flex align-items-center" style="font-size: 1.05rem;">
+                <h5 class="text-dark fw-bold border-bottom pb-2 mt-2 mb-3.5 d-flex align-items-center text-body-card" style="font-size: 1.05rem;">
                     <i class="bi bi-geo-alt-fill text-primary me-2 fs-5"></i> Contacto y Ubicación de Residencia
                 </h5>
                 
                 <div class="row g-3 mb-3.5 align-items-end">
                     <div class="col-12 col-md-4">
                         <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Celular Personal</label>
-                        <input type="text" name="celular_personal" maxlength="9" class="form-control rounded-3 py-2 font-monospace fw-semibold" value="{{ old('celular_personal', $paciente->celular_personal) }}" style="font-size: 0.92rem; height: 38px;">
+                        <input type="text" name="celular_personal" id="celular_personal_input" maxlength="20" class="form-control rounded-3 py-2 font-monospace fw-semibold bg-card-custom text-body-card" value="{{ old('celular_personal', $paciente->celular_personal) }}" placeholder="Ej: 987654321" style="font-size: 0.92rem; height: 38px;">
                     </div>
                     <div class="col-12 col-md-8">
                         <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Correo Electrónico</label>
-                        <input type="email" name="correo" class="form-control rounded-3 py-2 fw-semibold" value="{{ old('correo', $paciente->correo) }}" placeholder="ejemplo@correo.com" style="font-size: 0.92rem; height: 38px;">
+                        <input type="email" name="correo" class="form-control rounded-3 py-2 fw-semibold bg-card-custom text-body-card" value="{{ old('correo', $paciente->correo) }}" placeholder="ejemplo@correo.com" style="font-size: 0.92rem; height: 38px;">
                     </div>
                 </div>
 
@@ -167,7 +167,7 @@
                     </div>
                     <div class="col-12 col-md-8">
                         <label class="form-label font-monospace uppercase fw-bold text-secondary" style="font-size: 0.72rem; letter-spacing: 0.5px;">Dirección Domiciliaria Completa</label>
-                        <input type="text" name="direccion" class="form-control rounded-3 py-2 fw-semibold" value="{{ old('direccion', $paciente->direccion) }}" placeholder="Ej: Av. Principal 123 - Dpto 402" style="font-size: 0.92rem; height: 38px;">
+                        <input type="text" name="direccion" class="form-control rounded-3 py-2 fw-semibold bg-card-custom text-body-card" value="{{ old('direccion', $paciente->direccion) }}" placeholder="Ej: Av. Principal 123 - Dpto 402" style="font-size: 0.92rem; height: 38px;">
                     </div>
                 </div>
 
@@ -190,6 +190,29 @@
             window.initSingleCustomDropdown('paciente_genero_select');
             window.initSingleCustomDropdown('paciente_distrito_select');
         }
+
+        // ── LIMPIEZA DE NÚMERO TELEFÓNICO AL PEGAR/ESCRIBIR ──
+        const phoneInput = document.getElementById('celular_personal_input');
+        if (phoneInput) {
+            function limpiarNumero(valor) {
+                let soloNums = valor.replace(/\D/g, '');
+                if (soloNums.startsWith('51') && soloNums.length > 9) {
+                    soloNums = soloNums.substring(2);
+                }
+                // Permitimos hasta 20 caracteres según tu requerimiento ampliado
+                return soloNums.substring(0, 20);
+            }
+
+            phoneInput.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const textoPegado = (e.clipboardData || window.clipboardData).getData('text');
+                this.value = limpiarNumero(textoPegado);
+            });
+
+            phoneInput.addEventListener('input', function() {
+                this.value = limpiarNumero(this.value);
+            });
+        }
     });
 </script>
 
@@ -199,13 +222,34 @@
     .transition-row-normal { transition: opacity 0.15s ease; }
     .transition-row-normal:hover { opacity: 0.85; }
 
-    input.form-control {
+    .bg-card-custom { background-color: #ffffff; color: #0f172a; }
+    .text-body-card { color: #0f172a; }
+    .card-header-directorio { background: linear-gradient(135deg, #4e73df 0%, #224abe 100%) !important; }
+
+    input.form-control, select.form-select {
         border: 1px solid #cbd5e1;
         transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     }
-    input.form-control:focus {
+    input.form-control:focus, select.form-select:focus {
         border-color: #86b7fe;
         box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    /* 🌙 ADAPTACIÓN MODO OSCURO (data-bs-theme="dark") */
+    [data-bs-theme="dark"] .bg-card-custom,
+    [data-bs-theme="dark"] .card { 
+        background-color: #1e293b !important; 
+        color: #ffffff !important;
+    }
+    [data-bs-theme="dark"] .text-body-card,
+    [data-bs-theme="dark"] .text-dark { color: #ffffff !important; }
+    [data-bs-theme="dark"] .text-secondary { color: #94a3b8 !important; }
+    [data-bs-theme="dark"] .card-header-directorio { background: #1e3a8a !important; }
+
+    [data-bs-theme="dark"] input.form-control {
+        background-color: #0f172a !important;
+        border-color: #334155 !important;
+        color: #ffffff !important;
     }
 </style>
 @endsection
