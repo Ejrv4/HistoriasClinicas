@@ -95,15 +95,63 @@ if (typeof window.initSingleCustomDropdown !== 'function') {
         input.addEventListener('focus', () => {
             list.classList.remove('d-none');
             if(arrow) arrow.style.transform = 'rotate(180deg)';
-            // 🔄 MODIFICACIÓN: Ya no vaciamos el texto de golpe para no romper estados lógicos,
-            // en su lugar, seleccionamos el texto para que si escribe lo sobreescriba.
             input.select();
             filtrar(input.value);
         });
 
         input.addEventListener('input', (e) => {
             filtrar(e.target.value);
+            // Mostrar la lista al escribir si estaba oculta
+            if (list.classList.contains('d-none')) {
+                list.classList.remove('d-none');
+                if(arrow) arrow.style.transform = 'rotate(180deg)';
+            }
         });
+
+        // ⌨️ NUEVA LÓGICA DE NAVEGACIÓN POR TECLADO
+        input.addEventListener('keydown', (e) => {
+            const visibleItems = Array.from(list.querySelectorAll('.dropdown-item-custom')).filter(item => item.style.display !== 'none');
+            if (visibleItems.length === 0) return;
+
+            let currentIndex = visibleItems.findIndex(item => item.classList.contains('active-keyboard-item'));
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (currentIndex < visibleItems.length - 1) currentIndex++;
+                else currentIndex = 0;
+                actualizarFocoTeclado(visibleItems, currentIndex);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (currentIndex > 0) currentIndex--;
+                else currentIndex = visibleItems.length - 1;
+                actualizarFocoTeclado(visibleItems, currentIndex);
+            } else if (e.key === 'Tab' || e.key === 'Enter') {
+                // Si la lista está visible y hay opciones filtradas, autoselecciona la activa o la primera
+                if (!list.classList.contains('d-none')) {
+                    e.preventDefault();
+                    const itemSeleccionar = currentIndex >= 0 ? visibleItems[currentIndex] : visibleItems[0];
+                    if (itemSeleccionar) {
+                        seleccionarItem(itemSeleccionar);
+                        // Permitir la propagación del Tab para saltar al siguiente input de la UI
+                        if (e.key === 'Tab') {
+                            const focusables = Array.from(document.querySelectorAll('input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled])'));
+                            const idx = focusables.indexOf(input);
+                            if (idx >= 0 && idx < focusables.length - 1) {
+                                focusables[idx + 1].focus();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        function actualizarFocoTeclado(items, index) {
+            items.forEach(i => i.classList.remove('active-keyboard-item'));
+            if (items[index]) {
+                items[index].classList.add('active-keyboard-item');
+                items[index].scrollIntoView({ block: 'nearest' });
+            }
+        }
 
         function filtrar(term) {
             const cleanTerm = term.toLowerCase().trim();
@@ -114,33 +162,35 @@ if (typeof window.initSingleCustomDropdown !== 'function') {
                     item.style.display = 'block';
                 } else {
                     item.style.display = 'none';
+                    item.classList.remove('active-keyboard-item');
                 }
             });
         }
 
-        list.addEventListener('click', (e) => {
-            const item = e.target.closest('.dropdown-item-custom');
-            if (!item) return;
-
+        function seleccionarItem(item) {
             const val = item.getAttribute('data-value');
             const text = item.getAttribute('data-text');
 
-            // 🔄 MODIFICACIÓN: Bloqueamos asignaciones redundantes para cortar bucles infinitos
             if (hiddenValue.value !== val) {
                 hiddenValue.value = val;
                 input.value = text;
                 lastSelectedText = text;
 
                 const items = list.querySelectorAll('.dropdown-item-custom');
-                items.forEach(i => i.classList.remove('bg-primary', 'text-white', 'fw-bold'));
+                items.forEach(i => i.classList.remove('bg-primary', 'text-white', 'fw-bold', 'active-keyboard-item'));
                 item.classList.add('bg-primary', 'text-white', 'fw-bold');
 
-                // Disparamos un único evento controlado hacia arriba
                 hiddenValue.dispatchEvent(new Event('change', { bubbles: true }));
             }
 
             list.classList.add('d-none');
             if(arrow) arrow.style.transform = 'rotate(0deg)';
+        }
+
+        list.addEventListener('click', (e) => {
+            const item = e.target.closest('.dropdown-item-custom');
+            if (!item) return;
+            seleccionarItem(item);
         });
 
         // Cerrar al hacer clic fuera de manera segura
@@ -148,7 +198,6 @@ if (typeof window.initSingleCustomDropdown !== 'function') {
             if (!container.contains(e.target)) {
                 list.classList.add('d-none');
                 if(arrow) arrow.style.transform = 'rotate(0deg)';
-                // Si el médico dejó vacío el buscador sin elegir nada, restauramos el último texto válido
                 if (input.value.trim() === '') {
                     input.value = lastSelectedText;
                 }
@@ -157,8 +206,6 @@ if (typeof window.initSingleCustomDropdown !== 'function') {
     };
 }
 
-// 🔄 MODIFICACIÓN: Solo auto-inicializa si NO pertenece a una fila dinámica (como las de HC o Recetas)
-// Las filas dinámicas se gestionan manualmente en sus respectivas vistas para evitar duplicación de eventos.
 document.addEventListener('DOMContentLoaded', () => {
     const parentBox = document.getElementById('{{ $uniqueId }}');
     const isDynamicRow = parentBox ? parentBox.closest('.diagnostico-row') : null;
@@ -170,10 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <style>
     .custom-search-dropdown-box { margin-bottom: 0.5rem; }
-    .dropdown-menu-floating { top: 100%; mt: 4px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1) !important; border-color: #e9ecef !important; }
+    .dropdown-menu-floating { top: 100%; margin-top: 4px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1) !important; border-color: #e9ecef !important; }
     .dropdown-item-custom { cursor: pointer; transition: background-color 0.15s, color 0.15s; user-select: none; }
-    .dropdown-item-custom:hover { background-color: #f1f3f5; color: #0F4C81; }
-    .dropdown-item-custom.bg-primary:hover { background-color: #0d6efd !important; color: #ffffff !important; }
+    .dropdown-item-custom:hover, .dropdown-item-custom.active-keyboard-item { background-color: #0d6efd !important; color: #ffffff !important; }
     
     /* CONTROL DEL TOOLTIP OSCURO */
     .custom-hover-tooltip {
